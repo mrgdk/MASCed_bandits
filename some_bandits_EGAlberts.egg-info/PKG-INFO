@@ -1,0 +1,14 @@
+Metadata-Version: 1.1
+Name: some-bandits-EGAlberts
+Version: 0.0.1
+Summary: bandit algs for omnet
+Home-page: https://github.com/EGAlberts/
+Author: Elvin Alberts
+Author-email: elvingalberts@gmail.com
+License: UNKNOWN
+Description: # master_project
+        TODO
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 2.7
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
