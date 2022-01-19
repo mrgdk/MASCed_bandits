@@ -110,12 +110,9 @@ def execute(dimmer, response_time, activeServers, servers, max_servers, total_ut
         return convert_conf(action_reward_pairs[n_round][ACTION], pair[ACTION])
     else:
         #exploitation
-       
-        #action_index = choose_action(wf,action_reward_pairs,total_count)
+ 
         action_index = last_action
-        #index_picks.append(action_index)
-        #print("exploit!\n")
-        #print(action_reward_pairs)
+
         current_action = action_reward_pairs[action_index]
 
         if(current_action[ACTION] != (servers, dimmer)): 
