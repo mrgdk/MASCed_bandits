@@ -121,16 +121,33 @@ def utilitySEAMS2017A_notrunc(arrival_rate, dimmer, avg_response_time, max_serve
             return min(0, arrival_rate - max_throughput) * OPT_REVENUE
 
 def utilitySEAMS2022(arrival_rate, dimmer, avg_response_time, max_servers, servers):
-	ur_opt = arrival_rate * OPT_REVENUE
 	ur = arrival_rate * ((1 - dimmer) * BASIC_REVENUE + dimmer * OPT_REVENUE)
 	uc = SERVER_COST * (max_servers - servers)
 	urt = 1 - ((avg_response_time-RT_THRESH)/RT_THRESH)
 
 	bounds = bandit_args["bounds"]
 	
+	UPPER_RT_THRESHOLD = RT_THRESH * 4
+
+	delta_threshold = UPPER_RT_THRESHOLD-RT_THRESH
+
+	UrtPosFct = (delta_threshold/RT_THRESH) 
+
+	urt = None
+	if(avg_response_time <= UPPER_RT_THRESHOLD):
+		urt = ((RT_THRESH - avg_response_time)/RT_THRESH) 
+	else: 
+		urt = ((RT_THRESH - UPPER_RT_THRESHOLD)/RT_THRESH)
+
+	urt_final = None
+	if(avg_response_time <= RT_THRESH):
+		urt_final = urt*UrtPosFct 
+	else:
+		urt_final = urt
+
 	revenue_weight = 0.7
 	server_weight = 0.3
-	utility = urt*((revenue_weight*ur)+(server_weight*uc))
+	utility = urt_final*((revenue_weight*ur)+(server_weight*uc))
 	
 	return [truncate(utility, bounds)]
    
