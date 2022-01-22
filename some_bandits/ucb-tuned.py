@@ -135,6 +135,6 @@ class UCBTuned(Bandit):
         square_of_average = np.square(rewards_sum / n_k)
         estimated_variance = average_of_squares - square_of_average
         param = np.log(n) / n_k
-        V_j = estimated_variance + np.sqrt(2 * param)
+        V_k = estimated_variance + np.sqrt(2 * param)
 
-        return np.sqrt(param * V_j)
+        return np.sqrt(param * V_k)
