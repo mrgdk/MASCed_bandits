@@ -129,7 +129,7 @@ class SWUCBC(Bandit):
         t = len(game_list)
         
         t_or_tau = min(t,self.look_back)
-        res = chapter7(self.N_t(i, game_list), t_or_tau)
+        res = auer2002UCB(self.N_t(i, game_list), t_or_tau)
 
         return res
     
@@ -155,5 +155,16 @@ def chapter7(n_k, n):
     upper_term = 2.0 * (np.log( (1.0 / delta) ))
     
     to_be_sqrt = upper_term/n_k
+    
+    return np.sqrt(to_be_sqrt)
+
+def auer2002UCB(n_k, n):
+    T_i = n_k
+
+    upper_term = 2 * (np.log(n))
+
+    lower_term =  T_i
+
+    to_be_sqrt = upper_term/lower_term
     
     return np.sqrt(to_be_sqrt)

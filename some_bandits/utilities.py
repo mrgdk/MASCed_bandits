@@ -12,8 +12,7 @@ MAX_SERVICE_RATE = 1 / 0.4452713
 def assign_utilityfunc():
 	func =  {
         "SEAMS2017A": utilitySEAMS2017A,
-        "SEAMS2017A_notrunc": utilitySEAMS2017A_notrunc,
-        "SEAMS2022": utilitySEAMS2022
+        "SEAMS2022": utilitySEAMS2022,
     }.get(bandit_args["utility_function"])
 
 	return func
@@ -90,7 +89,7 @@ def convert_conf(new_conf, current_conf):
 	
 	return commands
 
-def utilitySEAMS2017A(arrival_rate, dimmer, avg_response_time, max_servers, servers):
+def utilitySEAMS2017A(arrival_rate, dimmer, avg_response_time, max_servers, servers, truncate=True):
 	ur_opt = arrival_rate * OPT_REVENUE
 	ur = arrival_rate * ((1-dimmer) * BASIC_REVENUE + (dimmer * OPT_REVENUE))
 	#ur = arrival_rate * ( (1-dimmer) * BASIC_REVENUE + dimmer * OPT_REVENUE)
@@ -102,25 +101,15 @@ def utilitySEAMS2017A(arrival_rate, dimmer, avg_response_time, max_servers, serv
 		return [truncate(ur + uc, bounds)]
 	else:
 		if(avg_response_time <= RT_THRESH):
-			return [truncate(ur, bounds)]
+			if(truncate):return [truncate(ur, bounds)]
+			else: return[ur]
 		else:
 			max_throughput = max_servers * MAX_SERVICE_RATE
-			return [truncate(min(0, arrival_rate - max_throughput) * OPT_REVENUE, bounds)]
+			if(truncate): return [truncate(min(0, arrival_rate - max_throughput) * OPT_REVENUE, bounds)]
+			else: return [min(0, arrival_rate - max_throughput) * OPT_REVENUE]
 
-def utilitySEAMS2017A_notrunc(arrival_rate, dimmer, avg_response_time, max_servers, servers):
-    ur_opt = arrival_rate * OPT_REVENUE
-    ur = arrival_rate * ((1 - dimmer) * BASIC_REVENUE + dimmer * OPT_REVENUE)
-    if (avg_response_time <= RT_THRESH) and (ur >= ur_opt - PRECISION):
-        uc = SERVER_COST * (max_servers - servers)
-        return ur + uc
-    else:
-        if avg_response_time <= RT_THRESH:
-            return ur
-        else:
-            max_throughput = max_servers * MAX_SERVICE_RATE
-            return min(0, arrival_rate - max_throughput) * OPT_REVENUE
 
-def utilitySEAMS2022(arrival_rate, dimmer, avg_response_time, max_servers, servers):
+def utilitySEAMS2022(arrival_rate, dimmer, avg_response_time, max_servers, servers, doTruncate=True):
 	ur = arrival_rate * ((1 - dimmer) * BASIC_REVENUE + dimmer * OPT_REVENUE)
 	uc = SERVER_COST * (max_servers - servers)
 	urt = 1 - ((avg_response_time-RT_THRESH)/RT_THRESH)
@@ -149,7 +138,8 @@ def utilitySEAMS2022(arrival_rate, dimmer, avg_response_time, max_servers, serve
 	server_weight = 0.3
 	utility = urt_final*((revenue_weight*ur)+(server_weight*uc))
 	
-	return [truncate(utility, bounds)]
+	if(doTruncate): return [truncate(utility, bounds)]
+	else: return [utility]
    
 
 calculate_utility = assign_utilityfunc()

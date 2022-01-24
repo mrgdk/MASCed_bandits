@@ -12,7 +12,7 @@ bandit_args = {
     "record_decisions": False,
     "num_dim_levels": 3,
     "max_servers": 3,
-    "bounds": (-400,300),
+    "bounds": (20,80),
     "utility_function": "SEAMS2022",
     "number_of_experts": 2,
     "expert": "EXP3C"

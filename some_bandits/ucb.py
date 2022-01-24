@@ -14,6 +14,7 @@ FORMULA_FUNC = None
 ACTION = 0
 REWARD = 1
 N_K = 2
+SQUARES_SUM = 3
 
 trace_len = 11340 #the total time of chosen trace in SWIM in seconds
 total_count = round(trace_len / 60) 
@@ -29,7 +30,7 @@ class ucbC(Bandit):
         if(bandit_args["knowledge"]):
             self.knowledge = bandit_args["knowledge"]
         else:
-            action_reward_pairs = [ [arm, 0.0, 0.0] for arm in self.arms ] 
+            action_reward_pairs = [ [arm, 0.0, 0.0, 0.0] for arm in self.arms ] 
             bandit_args["knowledge"] = (-1, action_reward_pairs, self.arms.index(initial_configuration))
             self.knowledge = bandit_args["knowledge"]
         
@@ -58,6 +59,7 @@ class ucbC(Bandit):
         
             pair[REWARD] = pair[REWARD] + sum(reward)
             pair[N_K] = pair[N_K] + 1
+            pair[SQUARES_SUM] = pair[SQUARES_SUM] + np.square(reward)
         
             n_round = n_round + 1
 
@@ -83,6 +85,8 @@ class ucbC(Bandit):
             current_action[REWARD] = current_action[REWARD] + sum(reward)
 
             current_action[N_K] = current_action[N_K] + 1
+            current_action[SQUARES_SUM] = current_action[SQUARES_SUM] + np.square(reward)
+
             total_count = sum([pair[N_K] for pair in action_reward_pairs])
             new_action = self.choose_action(action_reward_pairs,total_count)
 
@@ -127,7 +131,9 @@ class ucbC(Bandit):
     def formula_to_function(self, choice):
         funcs = {
                 "FH": chapter7,
-                "AO": asymptotically_optimal
+                "AO": asymptotically_optimal,
+                "OG": auer2002UCB,
+                "TN": tuned
             }
             
         func = funcs.get(choice)
@@ -155,3 +161,25 @@ def asymptotically_optimal(pair, t):
     to_be_sqrt = upper_term/lower_term
     
     return np.sqrt(to_be_sqrt)
+
+def auer2002UCB(pair, t):
+    T_i = pair[N_K]
+
+    upper_term = 2 * (np.log(t))
+
+    lower_term =  T_i
+
+    to_be_sqrt = upper_term/lower_term
+    
+    return np.sqrt(to_be_sqrt)
+def tuned(pair, n):
+    n_k = pair[N_K]
+    squares_sum = pair[SQUARES_SUM]
+    rewards_sum = pair[REWARD]
+    average_of_squares = squares_sum / n_k
+    square_of_average = np.square(rewards_sum / n_k)
+    estimated_variance = average_of_squares - square_of_average
+    param = np.log(n) / n_k
+    V_k = estimated_variance + np.sqrt(2 * param)
+
+    return np.sqrt(param * V_k)

@@ -124,26 +124,9 @@ def fixed_horizon_Pt(P_ti, S_ti, eta):
     P_ti.extend([np.exp(eta * weight)/sum_weights for weight in S_ti])
 
 def fixed_horizon_up(S_ti, A_t, P_t, payoff):
-    #\#print("test2")
     #S^_ti = S^_t-1i + 1 - I{A_t = i}(1 - X_t) / P_ti
-    #print("weights")
-    #print(S_ti)
-    #print("probabilities")
-    #print(P_t)
-    #print("payoff")
-    #print(payoff)
     for weight_i in range(len(S_ti)):
         if(weight_i == A_t):
-            #print("A_t is ")
-            #print(A_t)
-            #print("payoff is ")
-            #print(payoff)
-            new_weight = 1 - ((1-payoff)/P_t[A_t]) 
-            #print("new weight is")
-            #print(new_weight)
-            #print("prob of A_t is")
-            #print(P_t[A_t])
-
             S_ti[A_t] = S_ti[A_t] + 1 - ((1-payoff)/P_t[A_t]) 
         else:
             S_ti[weight_i] = S_ti[weight_i] + 1
