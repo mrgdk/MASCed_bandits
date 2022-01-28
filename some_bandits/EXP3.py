@@ -18,7 +18,7 @@ class EXP3C(Bandit, Expert):
         self.arms = bandit_args["arms"]
         self.num_arms = len(self.arms)
         self.knowledge = None
-
+        bandit_args["bounds"] = (-400,300)
         self.weights, self.distribution = self.exp3_initialize(len(self.arms))
 
         self.distr_func = None
@@ -39,7 +39,6 @@ class EXP3C(Bandit, Expert):
 
     def start_strategy(self, dimmer, response_time, activeServers, servers, max_servers, total_util, arrival_rate, formula):
         #print(0)
-        
         #np.random.seed(1337)
 
         self.set_functions(formula)
@@ -68,7 +67,7 @@ class EXP3C(Bandit, Expert):
         #print(2)
 
         ########
-        reward = calculate_utility(arrival_rate, dimmer, response_time, max_servers, servers)
+        reward, _ , _  = calculate_utility(arrival_rate, dimmer, response_time, max_servers, servers)
         #print('reward received')
         #print(reward)
         result_sum = sum(reward)

@@ -57,21 +57,31 @@ def pickle_test(data_to_pkl):
 		output.close()
 		return
 
-def truncate(utility, bounds):
-	lower_bound = bounds[0]
-	upper_bound = bounds[1]
+def truncate(utility):
+	bounds = bandit_args["bounds"]
 
-	x = utility
+	lower_bound, upper_bound = bounds
 
-	if(x > upper_bound):
-		x = upper_bound
-	elif(x < lower_bound):
-		x = lower_bound
+	old_range = upper_bound - lower_bound
+	out_of_bounds = False
+
+
+	if(utility > upper_bound):
+		upper_bound = utility
+		out_of_bounds = True
+	elif(utility < lower_bound):
+		lower_bound = utility
+		out_of_bounds = True
+
+	bandit_args["bounds"] = (lower_bound, upper_bound)
 	
-	x = x + abs(lower_bound)
-	result = float(x/(upper_bound + abs(lower_bound)))
+	new_range = upper_bound - lower_bound
 
-	return result
+	result = float((utility - lower_bound)/new_range)
+
+	if(out_of_bounds):
+		return result, True, old_range/new_range
+	else: return result, False, None
 
 def convert_conf(new_conf, current_conf):
 	#if current (2, 1.0) and new pair is (3,1.0) return "add_server"
@@ -113,8 +123,7 @@ def utilitySEAMS2022(arrival_rate, dimmer, avg_response_time, max_servers, serve
 	ur = arrival_rate * ((1 - dimmer) * BASIC_REVENUE + dimmer * OPT_REVENUE)
 	uc = SERVER_COST * (max_servers - servers)
 	urt = 1 - ((avg_response_time-RT_THRESH)/RT_THRESH)
-
-	bounds = bandit_args["bounds"]
+	
 	
 	UPPER_RT_THRESHOLD = RT_THRESH * 4
 
@@ -138,8 +147,10 @@ def utilitySEAMS2022(arrival_rate, dimmer, avg_response_time, max_servers, serve
 	server_weight = 0.3
 	utility = urt_final*((revenue_weight*ur)+(server_weight*uc))
 	
-	if(doTruncate): return [truncate(utility, bounds)]
-	else: return [utility]
+	if(doTruncate): 
+		truncated_reward, is_bound_diff, bound_delta = truncate(utility)
+		return [truncated_reward], is_bound_diff, bound_delta
+	else: return [utility], False, None
    
 
 calculate_utility = assign_utilityfunc()

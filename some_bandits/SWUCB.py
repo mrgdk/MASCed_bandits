@@ -7,6 +7,8 @@ from Bandit import Bandit
 
 
 
+REWARD = 0
+ACTION = 1
 XI = 2
 
 
@@ -29,15 +31,20 @@ class SWUCBC(Bandit):
         game_list = self.knowledge[1]
         last_action = self.knowledge[2]
 
-        if((n_round + 1) < (len(self.arms))): #+1 because you are choosing the new action, which could be out of exploration range
+          
+        if(self.arms[last_action] != (servers, dimmer)): 
+            raise RuntimeError("Previously chosen configuration " + str(self.arms[last_action]) + " is not reflected in SWIM's " + str((servers,dimmer)))
+
+        reward, is_bound_diff, bound_delta = calculate_utility(arrival_rate, dimmer, response_time, max_servers, servers)
+
+        if(is_bound_diff):
+            #delta sigma (oldsum) vs sigma delta sum_i
+            for game in game_list: game[REWARD] = game[REWARD] * bound_delta
+        
+        game_list.append((sum(reward)/len(reward), last_action)) #this represents the return of the evaluator() in definition.py and may need to be adjusted.
             
-            if(self.arms[last_action] != (servers, dimmer)): 
-                raise RuntimeError("Previously chosen configuration " + str(self.arms[last_action]) + " is not reflected in SWIM's " + str((servers,dimmer)))
-
-            reward_list = calculate_utility(arrival_rate, dimmer, response_time, max_servers, servers)
-
-            game_list.append((sum(reward_list)/len(reward_list), last_action)) #this represents the return of the evaluator() in definition.py and may need to be adjusted.
-
+        if((n_round + 1) < (len(self.arms))): #+1 because you are choosing the new action, which could be out of exploration range
+          
             n_round = n_round + 1
 
             new_knowledge = (n_round,game_list,n_round) #the round just also happens to be the index of action since we go through it one by one
@@ -49,12 +56,7 @@ class SWUCBC(Bandit):
             #current_action = ARMS[action_index]
             if(self.arms[last_action] != (servers, dimmer)): 
                 raise RuntimeError("Previously chosen configuration " + str(self.arms[last_action]) + " is not reflected in SWIM's " + str((servers,dimmer)))
-            
-            reward_list = calculate_utility(arrival_rate, dimmer, response_time, max_servers, servers)
-
-            game_list.append((sum(reward_list)/len(reward_list), last_action))
-
-
+        
             action_index = self.choose_action(game_list)
 
 
@@ -147,7 +149,6 @@ def asymptotically_optimal(n_k, t):
     to_be_sqrt = upper_term/lower_term
     
     return np.sqrt(to_be_sqrt)
-
 
 def chapter7(n_k, n):
     delta = 1.0 / np.square(n)

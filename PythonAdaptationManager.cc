@@ -23,8 +23,10 @@
 using namespace std;
 using namespace omnetpp;
 
+
 #define BANDIT_ALG omnetpp::getSimulation()->getSystemModule()->par("banditAlgorithmName").stringValue()
 #define BANDIT_FORM omnetpp::getSimulation()->getSystemModule()->par("banditFormulaType").stringValue()
+#define SLIDING_W omnetpp::getSimulation()->getSystemModule()->par("slidingWindowSize").stringValue()
 
 Define_Module(PythonAdaptationManager);
 
@@ -47,7 +49,7 @@ Tactic* PythonAdaptationManager::evaluate() {
     double maxServers = pModel->getMaxServers();
     double arrivalRate = (pModel->getEnvironment().getArrivalMean() > 0) ? (1 / pModel->getEnvironment().getArrivalMean()) : 0.0;
     PyObject *pModule, *pFunc;
-    PyObject *pArgs, *pValue, *pElement;
+    PyObject *pArgs, *pValue, *pElement, *pInstance;
 
 
 //    if(dimmer == 0.75){
@@ -57,66 +59,53 @@ Tactic* PythonAdaptationManager::evaluate() {
  //       return pMacroTactic;
   //  }
 
-    std::cout << "The sim time is  " << cSimulation::getActiveSimulation()->getSimTime() << " \n";
     if(!isServerBooting && !isServerRemoving){
         Py_Initialize();
 
         std::string alg(BANDIT_ALG);
         std::string module_name = "some_bandits." + alg;
+        std::string class_name = alg + "C";
 
         pModule = PyImport_ImportModule(module_name.c_str());// ucb");
         if(pModule != NULL){
 
 
 
-            pFunc = PyObject_GetAttrString(pModule, "execute");
+            pFunc = PyObject_GetAttrString(pModule, class_name.c_str());
 
             if(pFunc && PyCallable_Check(pFunc)) {
 
+                pInstance = PyObject_CallObject(pFunc, nullptr);
 
-                pArgs = PyTuple_New(8);
+                if(pInstance != NULL){
+                    pValue = PyObject_CallMethodObjArgs(pInstance, PyString_FromString("start_strategy"),
+                                                   PyFloat_FromDouble(dimmer), PyFloat_FromDouble(responseTime), PyFloat_FromDouble(activeServers),
+                                                   PyFloat_FromDouble(servers), PyFloat_FromDouble(maxServers), PyFloat_FromDouble(totalUtilization),
+                                                   PyFloat_FromDouble(arrivalRate), PyString_FromString(BANDIT_FORM),NULL);
 
-                double foo [] = {dimmer,responseTime,activeServers,servers,maxServers,totalUtilization, arrivalRate};
-                //dimmer, response_time, activeServers, servers, max_servers, total_util
-                for(int i = 0; i < 7; i++) {
-                   pValue = PyFloat_FromDouble(foo[i]);
-                   PyTuple_SetItem(pArgs, i, pValue);
-                }
+                    if(pValue != NULL) {
+                        int py_list_size = PyList_Size(pValue);
 
-                PyTuple_SetItem(pArgs, 7, PyString_FromString(BANDIT_FORM));
+                        for(Py_ssize_t i = 0; i < py_list_size; i++)
+                        {
+                        pElement = PyList_GetItem(pValue, i);
+                        std::string tactic_element = PyString_AsString(pElement);
+                        //std::cout << "The tactic " << tactic_element << " was added\n";
 
+                        switch (tactic_element[0]) {
+                           case 'r': pMacroTactic->addTactic(new RemoveServerTactic); break;
+                           case 'a':  pMacroTactic->addTactic(new AddServerTactic); break;
+                           case 's':
+                           char * cstr = new char [tactic_element.length()+1];
+                           strcpy (cstr, tactic_element.c_str());
+                           char * parts = strtok(cstr, " ");
+                           double dimmer_value = atof(strtok(NULL, " "));
+                           pMacroTactic->addTactic(new SetDimmerTactic(dimmer_value));
+                           }
+                        }
 
-                pValue = PyObject_CallObject(pFunc, pArgs);
-
-                if(pValue != NULL) {
-                    int py_list_size = PyList_Size(pValue);
-
-                    for(Py_ssize_t i = 0; i < py_list_size; i++)
-                    {
-                    pElement = PyList_GetItem(pValue, i);
-                    std::string tactic_element = PyString_AsString(pElement);
-                    //std::cout << "The tactic " << tactic_element << " was added\n";
-
-                    switch (tactic_element[0]) {
-                       case 'r': pMacroTactic->addTactic(new RemoveServerTactic); break;
-                       case 'a':  pMacroTactic->addTactic(new AddServerTactic); break;
-                       case 's':
-                       char * cstr = new char [tactic_element.length()+1];
-                       strcpy (cstr, tactic_element.c_str());
-                       char * parts = strtok(cstr, " ");
-                       double dimmer_value = atof(strtok(NULL, " "));
-                       pMacroTactic->addTactic(new SetDimmerTactic(dimmer_value));
-                       }
                     }
-
                 }
-
-               //         Py_DECREF(pFunc);
-             //           Py_DECREF(pModule);
-           //             Py_DECREF(pArgs);
-         //               Py_DECREF(pValue);
-       //                 Py_DECREF(pElement);
-                //}
                else {
                    Py_DECREF(pFunc);
                    Py_DECREF(pModule);
