@@ -41,7 +41,7 @@ class SWUCBC(Bandit):
             #delta sigma (oldsum) vs sigma delta sum_i
             for game in game_list: game[REWARD] = game[REWARD] * bound_delta
         
-        game_list.append((sum(reward)/len(reward), last_action)) #this represents the return of the evaluator() in definition.py and may need to be adjusted.
+        game_list.append([sum(reward)/len(reward), last_action]) #this represents the return of the evaluator() in definition.py and may need to be adjusted.
             
         if((n_round + 1) < (len(self.arms))): #+1 because you are choosing the new action, which could be out of exploration range
           

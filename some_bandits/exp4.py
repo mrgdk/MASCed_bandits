@@ -10,7 +10,7 @@ REWARD = 1
 N_K = 2
 
 #ETA = 1
-TOTAL_ROUNDS = round(22300 / 60)
+TOTAL_ROUNDS = round(30000 / 60)
 
 ETA = None
 class exp4C(Bandit):
@@ -61,7 +61,7 @@ class exp4C(Bandit):
         self.experts.extend(self.knowledge[2])
         previous_expert_chosen = self.knowledge[3]
 
-        #self.expert_status()
+        self.expert_status()
 
         results, _, _ = (calculate_utility(arrival_rate, dimmer, response_time, max_servers, servers))
 

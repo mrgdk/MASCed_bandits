@@ -48,8 +48,8 @@ Tactic* PythonAdaptationManager::evaluate() {
     double servers = pModel->getServers();
     double maxServers = pModel->getMaxServers();
     double arrivalRate = (pModel->getEnvironment().getArrivalMean() > 0) ? (1 / pModel->getEnvironment().getArrivalMean()) : 0.0;
-    PyObject *pModule, *pFunc;
-    PyObject *pArgs, *pValue, *pElement, *pInstance;
+    PyObject *pModule, *pModule2, *pFunc, *pFunc2;
+    PyObject *pArgs, *pArgs2, *pValue, *pElement, *pInstance;
 
 
 //    if(dimmer == 0.75){
@@ -63,25 +63,41 @@ Tactic* PythonAdaptationManager::evaluate() {
         Py_Initialize();
 
         std::string alg(BANDIT_ALG);
+        std::string runner_name = "some_bandits.test"; //+ alg;
         std::string module_name = "some_bandits." + alg;
         std::string class_name = alg + "C";
 
         pModule = PyImport_ImportModule(module_name.c_str());// ucb");
         if(pModule != NULL){
 
-
-
             pFunc = PyObject_GetAttrString(pModule, class_name.c_str());
 
             if(pFunc && PyCallable_Check(pFunc)) {
 
+
                 pInstance = PyObject_CallObject(pFunc, nullptr);
 
-                if(pInstance != NULL){
-                    pValue = PyObject_CallMethodObjArgs(pInstance, PyString_FromString("start_strategy"),
-                                                   PyFloat_FromDouble(dimmer), PyFloat_FromDouble(responseTime), PyFloat_FromDouble(activeServers),
-                                                   PyFloat_FromDouble(servers), PyFloat_FromDouble(maxServers), PyFloat_FromDouble(totalUtilization),
-                                                   PyFloat_FromDouble(arrivalRate), PyString_FromString(BANDIT_FORM),NULL);
+                pModule2 = PyImport_ImportModule(runner_name.c_str());// ucb")
+
+                pFunc2 = PyObject_GetAttrString(pModule2, "start");
+
+                if(pFunc2 && PyCallable_Check(pFunc2)) {
+
+                    pArgs = PyTuple_New(9);
+
+                    double foo [] = {dimmer, responseTime, activeServers, servers, maxServers, totalUtilization, arrivalRate};
+                    PyTuple_SetItem(pArgs, 0, pInstance);
+
+                    for(int i = 1; i < 8; i++){
+                        pValue = PyFloat_FromDouble(foo[i-1]);
+                        PyTuple_SetItem(pArgs, i, pValue);
+                    }
+
+                    PyTuple_SetItem(pArgs, 8, PyString_FromString(BANDIT_FORM));
+
+                    pValue = PyObject_CallObject(pFunc2, pArgs);
+
+
 
                     if(pValue != NULL) {
                         int py_list_size = PyList_Size(pValue);
@@ -105,20 +121,17 @@ Tactic* PythonAdaptationManager::evaluate() {
                         }
 
                     }
-                }
-               else {
-                   Py_DECREF(pFunc);
-                   Py_DECREF(pModule);
-                   PyErr_Print();
-                   fprintf(stderr, "Call failed\n");
-               }
+                    else {
+                           Py_DECREF(pFunc);
+                           Py_DECREF(pModule);
+                           PyErr_Print();
+                           fprintf(stderr, "Method call failed\n");}
+                                    }
 
-            }
-            else {
-                Py_DECREF(pModule);
-                PyErr_Print();
-                fprintf(stderr, "something failed\n");
-            }
+                    return pMacroTactic;
+
+                }
+
         }
         else{
             PyErr_Print();

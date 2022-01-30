@@ -90,9 +90,9 @@ def convert_conf(new_conf, current_conf):
 
 	server_difference = new_conf[0] - current_conf[0]
 
-	commands = ['add_server'] * server_difference
+	commands = ['add_server'] * int(server_difference)
 
-	if(not commands): commands = ["remove_server"] * abs(server_difference)
+	if(not commands): commands = ["remove_server"] * int(abs(server_difference))
 
 	if(new_conf[1] != current_conf[1]):
 		commands.append("set_dimmer " + str(new_conf[1]))

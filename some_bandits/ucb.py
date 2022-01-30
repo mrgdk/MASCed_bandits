@@ -15,7 +15,7 @@ ACTION = 1
 
 
 
-trace_len = 11340 #the total time of chosen trace in SWIM in seconds
+trace_len = 15000 #the total time of chosen trace in SWIM in seconds
 total_count = round(trace_len / 60) 
 DELTA = 1 / np.square(total_count)
 
@@ -63,6 +63,9 @@ class ucbC(Bandit):
             #save_to_pickle(new_knowledge, 'ucb_knowledge')
             bandit_args['knowledge'] = new_knowledge
 
+            if(bandit_args["record_decisions"]): 
+                save_to_pickle(new_knowledge, "ucb_" + str(formula) + "_" + str(bandit_args["start_time"]))
+
             return convert_conf(self.arms[n_round], self.arms[last_action])
         else:
             n_round = n_round + 1
@@ -73,6 +76,9 @@ class ucbC(Bandit):
             new_knowledge = (n_round, self.game_list, new_action)
             #save_to_pickle(new_knowledge, "ucb_knowledge")
             bandit_args['knowledge'] = new_knowledge
+
+            if(bandit_args["record_decisions"]): 
+                save_to_pickle(new_knowledge, "ucb_" + str(formula) + "_" + str(bandit_args["start_time"]))
 
             return convert_conf(self.arms[new_action],self.arms[last_action])
 

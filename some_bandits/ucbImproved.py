@@ -12,7 +12,7 @@ FORMULA_FUNC = None
 
 REWARD = 0
 ACTION = 1
-trace_len = 108400 #the total time of chosen trace in SWIM in seconds
+trace_len = 36000 #the total time of chosen trace in SWIM in seconds
 horizon = round(trace_len / 60) 
 
 
@@ -33,6 +33,9 @@ class ucbImprovedC(Bandit):
     def start_strategy(self, dimmer, response_time, activeServers, servers, max_servers, total_util, arrival_rate, formula):
         dimmer = round(dimmer,2)
         self.game_list, prev_action, delta_m, removable_arms = self.knowledge
+        print("begin knowledge--")
+        print(self.knowledge)
+        print("end knowledge--")
 
         print(removable_arms)
         print((servers, dimmer))
@@ -50,7 +53,7 @@ class ucbImprovedC(Bandit):
         print("rew is")
         print(reward)
         print("0")
-        self.game_list.append((sum(reward), prev_action)) #this represents the return of the evaluator() in definition.py and may need to be adjusted.
+        self.game_list.append([sum(reward), prev_action]) #this represents the return of the evaluator() in definition.py and may need to be adjusted.
  
         delta_sq = np.square(delta_m)
 

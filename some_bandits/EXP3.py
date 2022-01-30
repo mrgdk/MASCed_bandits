@@ -25,7 +25,7 @@ class EXP3C(Bandit, Expert):
         self.update_func = None
 
         
-        trace_len = 11340 #the total time of chosen trace in SWIM in seconds
+        trace_len = 15000 #the total time of chosen trace in SWIM in seconds
         total_count = round(trace_len / 60) 
         self.eta = np.sqrt(np.log(len(self.arms)) / (len(self.arms) * total_count) )
         
@@ -40,7 +40,7 @@ class EXP3C(Bandit, Expert):
     def start_strategy(self, dimmer, response_time, activeServers, servers, max_servers, total_util, arrival_rate, formula):
         #print(0)
         #np.random.seed(1337)
-
+        print(bandit_args["bounds"])
         self.set_functions(formula)
 
         if(bandit_args["knowledge"]):
@@ -90,7 +90,7 @@ class EXP3C(Bandit, Expert):
         #print(4)
 
         if(bandit_args["record_decisions"]): 
-            save_to_pickle(new_knowledge, str(bandit_args["start_time"]))
+            save_to_pickle(new_knowledge, "exp3_" + str(bandit_args["start_time"]))
 
         #print(5)
 
