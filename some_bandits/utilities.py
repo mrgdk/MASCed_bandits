@@ -1,5 +1,5 @@
 import pickle
-from bandit_options import bandit_args
+from some_bandits.bandit_options import bandit_args
 
 OPT_REVENUE = 1.5
 BASIC_REVENUE = 1
@@ -67,19 +67,27 @@ def truncate(utility):
 
 
 	if(utility > upper_bound):
-		upper_bound = utility
-		out_of_bounds = True
+		if(bandit_args["dynamic_bounds"]): 
+			upper_bound = utility
+			out_of_bounds = True
+		else:
+			utility = upper_bound
+			
 	elif(utility < lower_bound):
-		lower_bound = utility
-		out_of_bounds = True
+		if(bandit_args["dynamic_bounds"]):
+			lower_bound = utility
+			out_of_bounds = True
+		else:
+			utility = lower_bound
 
-	bandit_args["bounds"] = (lower_bound, upper_bound)
+	
 	
 	new_range = upper_bound - lower_bound
 
 	result = float((utility - lower_bound)/new_range)
 
 	if(out_of_bounds):
+		bandit_args["bounds"] = (lower_bound, upper_bound)
 		return result, True, old_range/new_range
 	else: return result, False, None
 

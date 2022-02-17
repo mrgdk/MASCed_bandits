@@ -1,4 +1,19 @@
+README.md
+setup.py
+some_bandits/Bandit.py
+some_bandits/EXP3.py
+some_bandits/Expert.py
+some_bandits/SWIMInternalInterface.py
+some_bandits/SWUCB.py
 some_bandits/__init__.py
+some_bandits/bandit_options.py
+some_bandits/eGreedy.py
+some_bandits/exp4.py
+some_bandits/expertknowledge.py
+some_bandits/ucb pre-knwldgshift.py
+some_bandits/ucb.py
+some_bandits/ucbImproved.py
+some_bandits/ucbnorm.py
 some_bandits/utilities.py
 some_bandits_EGAlberts.egg-info/PKG-INFO
 some_bandits_EGAlberts.egg-info/SOURCES.txt

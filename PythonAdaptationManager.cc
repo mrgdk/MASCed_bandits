@@ -28,7 +28,47 @@ using namespace omnetpp;
 #define BANDIT_FORM omnetpp::getSimulation()->getSystemModule()->par("banditFormulaType").stringValue()
 #define SLIDING_W omnetpp::getSimulation()->getSystemModule()->par("slidingWindowSize").stringValue()
 
+
 Define_Module(PythonAdaptationManager);
+
+
+double PythonAdaptationManager::SEAMS2022Utility(double arrival_rate, double dimmer, double avg_response_time, double max_servers, double servers)
+{
+    double OPT_REVENUE = 1.5;
+    double BASIC_REVENUE = 1;
+    double SERVER_COST = 10;
+    double RT_THRESH = 0.75;
+
+    double ur = arrival_rate * ((1 - dimmer) * BASIC_REVENUE + dimmer * OPT_REVENUE);
+    double uc = SERVER_COST * (max_servers - servers);
+
+    double UPPER_RT_THRESHOLD = RT_THRESH * 4;
+
+    double delta_threshold = UPPER_RT_THRESHOLD-RT_THRESH;
+
+    double UrtPosFct = (delta_threshold/RT_THRESH);
+
+    double urt = 0;
+    if(avg_response_time <= UPPER_RT_THRESHOLD){
+        urt = ((RT_THRESH - avg_response_time)/RT_THRESH);
+    }
+    else{
+        urt = ((RT_THRESH - UPPER_RT_THRESHOLD)/RT_THRESH);
+    }
+
+    double urt_final = 0;
+    if(avg_response_time <= RT_THRESH) {
+        urt_final = urt*UrtPosFct;}
+    else{
+        urt_final = urt;}
+
+    double revenue_weight = 0.7;
+    double server_weight = 0.3;
+    double utility = urt_final*((revenue_weight*ur)+(server_weight*uc));
+
+    return utility;
+}
+
 
 /**
  * Embedded Python adaptation
@@ -52,18 +92,14 @@ Tactic* PythonAdaptationManager::evaluate() {
     PyObject *pArgs, *pArgs2, *pValue, *pElement, *pInstance;
 
 
-//    if(dimmer == 0.75){
-//        printf("%f,%f,%f,%f,%f,%f,%f", dimmer,responseTime,activeServers,servers,maxServers,totalUtilization, arrivalRate);
- //       Py_Finalize();
- //       pMacroTactic->addTactic(new SetDimmerTactic(0.75));
- //       return pMacroTactic;
-  //  }
+    //double utility = PythonAdaptationManager::SEAMS2022Utility(arrivalRate, dimmer, responseTime, maxServers, servers);
+
 
     if(!isServerBooting && !isServerRemoving){
         Py_Initialize();
 
         std::string alg(BANDIT_ALG);
-        std::string runner_name = "some_bandits.test"; //+ alg;
+        std::string runner_name = "some_bandits.SWIMInternalInterface"; //+ alg;
         std::string module_name = "some_bandits." + alg;
         std::string class_name = alg + "C";
 
@@ -75,7 +111,7 @@ Tactic* PythonAdaptationManager::evaluate() {
             if(pFunc && PyCallable_Check(pFunc)) {
 
 
-                pInstance = PyObject_CallObject(pFunc, nullptr);
+                //pInstance = PyObject_CallObject(pFunc, nullptr);
 
                 pModule2 = PyImport_ImportModule(runner_name.c_str());// ucb")
 
@@ -86,14 +122,14 @@ Tactic* PythonAdaptationManager::evaluate() {
                     pArgs = PyTuple_New(9);
 
                     double foo [] = {dimmer, responseTime, activeServers, servers, maxServers, totalUtilization, arrivalRate};
-                    PyTuple_SetItem(pArgs, 0, pInstance);
+                    PyTuple_SetItem(pArgs, 0, PyUnicode_FromString(BANDIT_ALG));
 
                     for(int i = 1; i < 8; i++){
                         pValue = PyFloat_FromDouble(foo[i-1]);
                         PyTuple_SetItem(pArgs, i, pValue);
                     }
 
-                    PyTuple_SetItem(pArgs, 8, PyString_FromString(BANDIT_FORM));
+                    PyTuple_SetItem(pArgs, 8, PyUnicode_FromString(BANDIT_FORM));
 
                     pValue = PyObject_CallObject(pFunc2, pArgs);
 
@@ -105,7 +141,7 @@ Tactic* PythonAdaptationManager::evaluate() {
                         for(Py_ssize_t i = 0; i < py_list_size; i++)
                         {
                         pElement = PyList_GetItem(pValue, i);
-                        std::string tactic_element = PyString_AsString(pElement);
+                        std::string tactic_element = PyUnicode_AsUTF8(pElement);
                         //std::cout << "The tactic " << tactic_element << " was added\n";
 
                         switch (tactic_element[0]) {

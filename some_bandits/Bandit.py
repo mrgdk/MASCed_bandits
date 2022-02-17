@@ -4,10 +4,14 @@
 
 
 class Bandit:
-    def __init__(self):
-        pass
-    def start_strategy(self, dimmer, response_time, activeServers, servers, max_servers, total_util, arrival_rate, formula):
+    def __init__(self, formula):
+        self.name = "defaultBanditName"
+        
+        
+    def start_strategy(self, reward):
         """ starts execution """
         pass
+
+
 
 

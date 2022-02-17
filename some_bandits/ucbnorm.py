@@ -2,108 +2,95 @@
 import numpy as np
 import time
 from random import sample
-from utilities import save_to_pickle, load_from_pickle, truncate, convert_conf, calculate_utility
-from bandit_options import bandit_args
-from Bandit import Bandit
+from some_bandits.utilities import save_to_pickle, load_from_pickle, truncate, convert_conf, calculate_utility
+from some_bandits.bandit_options import bandit_args
+from some_bandits.Bandit import Bandit
 
 
 
-ACTION = 0
-REWARD = 1
-SQ_REWARD = 2
-N_K = 3
+REWARD = 0
+ACTION = 1
 
 trace_len = 11340 #the total time of chosen trace in SWIM in seconds
 total_count = round(trace_len / 60) 
 DELTA = 1 / np.square(total_count)
 
 
-initial_configuration = bandit_args["initial_configuration"]
 class ucbnormC(Bandit):
-    def __init__(self):
+    def __init__(self, formula=None):
         self.arms = bandit_args['arms']
-        self.knowledge = None
-        if(bandit_args["knowledge"]):
-            self.knowledge = bandit_args["knowledge"]
-        else:
-            action_reward_pairs = [ [arm, 0.0, 0.0, 0.0] for arm in self.arms ] 
-            bandit_args["knowledge"] = (1, action_reward_pairs, self.arms.index(initial_configuration))
-            self.knowledge = bandit_args["knowledge"]
         
-        
-    def start_strategy(self, dimmer, response_time, activeServers, servers, max_servers, total_util, arrival_rate, formula):
-        
-       
-        #need an elegant way to handle the first read where knowledge doesn't exist yet
-      
-        n_round = self.knowledge[0]
-        action_reward_pairs = self.knowledge[1]
-        last_action = self.knowledge[2]
-    
-        
-        
-        minimum_arm_plays = np.ceil(8 * np.log10(n_round))
+        self.bandit_round = 1
+        self.last_action = bandit_args["initial_configuration"]
+        self.game_list = []
+                
+    def start_strategy(self, reward):
+         
+        minimum_arm_plays = np.ceil(8 * np.log10(self.bandit_round))
         if minimum_arm_plays == 0: minimum_arm_plays = 0.1 #edge case for first round
 
-        prev_pair = action_reward_pairs[last_action]
-
-        if(prev_pair[ACTION] != (servers, dimmer)): 
-            raise RuntimeError("Previously chosen configuration " + str(prev_pair[ACTION]) + " is not reflected in SWIM's " + str((servers,dimmer)))
-
-        reward = calculate_utility(arrival_rate, dimmer, response_time, max_servers, servers, False)
-        reward = sum(reward)
-        prev_pair[REWARD] = prev_pair[REWARD] + reward
-        prev_pair[SQ_REWARD] = prev_pair[SQ_REWARD] + np.square(reward)
-        prev_pair[N_K] = prev_pair[N_K] + 1
+        self.game_list.append([reward, self.last_action])
     
-        for p_i, pair in enumerate(action_reward_pairs):
-            if(pair[N_K] < minimum_arm_plays):
-                n_round = n_round + 1
-                new_knowledge = (n_round,action_reward_pairs,p_i) 
-                bandit_args['knowledge'] = new_knowledge
-                return convert_conf(pair[ACTION], action_reward_pairs[last_action][ACTION])
+        self.bandit_round = self.bandit_round + 1
+
+        next_arm = None
+        for arm_i, arm in enumerate(self.arms):
+            if(self.times_played(arm) < minimum_arm_plays):
+                next_arm = arm
+                break;         
+
+        if(not next_arm): 
             
+            for arm in self.arms:
+                arm_avg = self.reward_average(arm)
+                
+            next_arm = next_arm = max(self.arms, key=lambda arm: \
+                       self.reward_average(arm) + self.confidence_factor())
 
+        self.last_action = next_arm
+        return next_arm
 
-        arm_chosen = self.choose_action(action_reward_pairs, n_round)
-        n_round = n_round + 1
-        new_knowledge = (n_round,action_reward_pairs, arm_chosen) 
-        bandit_args['knowledge'] = new_knowledge
+    def reward_average(self, arm):
+        r_sum = 0
 
-        return convert_conf(action_reward_pairs[arm_chosen][ACTION], prev_pair[ACTION])
-
-
-    def choose_action(self, pairs, n):
-        "Returns index in the pair list of the chosen action"
-
-        highest = -99999999 #
-        chosen_action = None
-
-        for pair_index in range(len(pairs)):
+        for game in self.game_list:  
+            if(game[ACTION] == arm): #the games in which arm was chosen
+                r_sum+=game[REWARD]
+     
+        times_arm_played = self.times_played(arm) 
+        if(r_sum == 0 or times_arm_played == 0): return 0
             
-            current_pair = pairs[pair_index]
+        return r_sum/times_arm_played
+    
+    def times_played(self, arm):
+        return len([game for game in self.game_list if game[ACTION] == arm])
 
-            Q_a = current_pair[REWARD]/current_pair[N_K]
-        
+    def score(self, arm):
+        arm_avg = self.reward_average(arm)
+        return arm_avg + self.confidence_factor(arm_avg, arm)
 
-            confidence = self.confidence_factor(Q_a, current_pair, n)
+    def sqreward_average(self, arm):
+        r_sum = 0
 
-            result = Q_a + confidence
-            #print("Pair Index " + str(pair_index) + "has value " + str(result))
-            if(result > highest): #and wf.criteria(current_pair[ACTION], wf)):
-                #print("reached")
-                highest = result
-                chosen_action = pair_index
+        for game in self.game_list:  
+            if(game[ACTION] == arm): #the games in which arm was chosen
+                r_sum+=np.square(game[REWARD])
 
-        # print("the value was " + str(highest))
-        return chosen_action
+        times_arm_played = self.times_played(arm) 
+        if(r_sum == 0 or times_arm_played == 0): return 0
+            
+        return r_sum/times_arm_played
 
 
-    def confidence_factor(self, emp_mean, pair, n):
-        
-        sq_means = (pair[SQ_REWARD] - (pair[N_K] * np.square(emp_mean))) / (pair[N_K] - 1)
+    def confidence_factor(self, emp_mean, arm):
+        #sum of square rewards - avg rew
+        n_k = times_played(arm)
 
-        log_factor = (np.log(n-1)) / pair[N_K]
+        sqreward_sum = sqreward_average(arm) * n_k
+
+        sq_means = (sqreward_sum - (np.square(emp_mean) * n_k)) / (n_k -1)
+
+        log_factor = (np.log(self.bandit_round-1)) / n_k
 
         return np.sqrt(16 * sq_means * log_factor)
 

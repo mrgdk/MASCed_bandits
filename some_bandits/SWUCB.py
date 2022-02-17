@@ -1,9 +1,9 @@
 import numpy as np
 import time
 from random import sample
-from utilities import save_to_pickle, load_from_pickle, truncate, convert_conf, calculate_utility
-from bandit_options import bandit_args
-from Bandit import Bandit
+from some_bandits.utilities import save_to_pickle, load_from_pickle, truncate, convert_conf, calculate_utility
+from some_bandits.bandit_options import bandit_args
+from some_bandits.Bandit import Bandit
 
 
 
@@ -12,160 +12,100 @@ ACTION = 1
 XI = 2
 
 
-initial_configuration = bandit_args["initial_configuration"]
 class SWUCBC(Bandit):
-    def __init__(self):
+    def __init__(self, formula):
         #self.look_back = 65
-        self.arms = bandit_args["arms"]
-        self.knowledge = None
-        if(bandit_args["knowledge"]):
-            self.knowledge = bandit_args["knowledge"]
-        else:
-            bandit_args["knowledge"] = (-1, [], self.arms.index(initial_configuration))
-            self.knowledge = bandit_args["knowledge"]
-
-    def start_strategy(self, dimmer, response_time, activeServers, servers, max_servers, total_util, arrival_rate, formula):
         self.look_back = int(formula)
+        self.arms = bandit_args["arms"]
 
-        n_round = self.knowledge[0]
-        game_list = self.knowledge[1]
-        last_action = self.knowledge[2]
+        self.bandit_round = -1
+        self.game_list = []
+        self.last_action = bandit_args["initial_configuration"]
 
-          
-        if(self.arms[last_action] != (servers, dimmer)): 
-            raise RuntimeError("Previously chosen configuration " + str(self.arms[last_action]) + " is not reflected in SWIM's " + str((servers,dimmer)))
+    def start_strategy(self, reward):
+               
+        self.game_list.append([reward, self.last_action])
 
-        reward, is_bound_diff, bound_delta = calculate_utility(arrival_rate, dimmer, response_time, max_servers, servers)
+        self.bandit_round = self.bandit_round + 1
 
-        if(is_bound_diff):
-            #delta sigma (oldsum) vs sigma delta sum_i
-            for game in game_list: game[REWARD] = game[REWARD] * bound_delta
-        
-        game_list.append([sum(reward)/len(reward), last_action]) #this represents the return of the evaluator() in definition.py and may need to be adjusted.
-            
-        if((n_round + 1) < (len(self.arms))): #+1 because you are choosing the new action, which could be out of exploration range
-          
-            n_round = n_round + 1
-
-            new_knowledge = (n_round,game_list,n_round) #the round just also happens to be the index of action since we go through it one by one
-            #save_to_pickle(new_knowledge, 'ucb_knowledge')
-            bandit_args['knowledge'] = new_knowledge
-
-            return convert_conf(self.arms[n_round], self.arms[last_action])
+        if((self.bandit_round) < (len(self.arms))):
+            #initial exploration      
+            next_arm = self.arms[self.bandit_round]
         else:
-            #current_action = ARMS[action_index]
-            if(self.arms[last_action] != (servers, dimmer)): 
-                raise RuntimeError("Previously chosen configuration " + str(self.arms[last_action]) + " is not reflected in SWIM's " + str((servers,dimmer)))
-        
-            action_index = self.choose_action(game_list)
+            next_arm = max(self.arms, key=lambda arm: \
+                       self.X_t(arm) + self.c_t(arm))
 
+        self.last_action = next_arm
+        return next_arm
 
-            new_knowledge = (n_round, game_list, action_index)
-
-            bandit_args['knowledge'] = new_knowledge
-
-
-
-            return convert_conf(self.arms[action_index],self.arms[last_action])
-
-
-
-    def choose_action(self,game_list):
-        best_arm = None
-        best_value = -9999999
-
-        for arm_index in range(len(self.arms)):
-            current_value = self.X_t(arm_index,game_list) + self.c_t(arm_index, game_list)
-            if(current_value > best_value):
-                best_value = current_value
-                best_arm = arm_index
-        return best_arm
-
-    def N_t(self, i, game_list):
-
-        total_count = len(game_list) #t
-        
-        start_point = max(0, total_count-self.look_back+1)
+    def N_t(self, arm):
+        start_point = max(0, self.bandit_round-self.look_back+1)
         count = 0
-        for game_index in range(start_point,total_count):
-            if(game_list[game_index][1] == i): #I_s == i in other words arm of game equals given arm
+        for game_index in range(start_point,self.bandit_round):
+            if(self.game_list[game_index][ACTION] == arm):
                 count += 1
 
         return count
 
-    def X_t(self, i, game_list):
-        total_count = len(game_list) #t
+    def X_t(self, arm):
+
         summated = 0
 
-        start_point = max(0, total_count-self.look_back+1)
-        for game_index in range(start_point,total_count):
+        start_point = max(0, self.bandit_round-self.look_back+1)
+        for game_index in range(start_point,self.bandit_round):
             current_game = game_list[game_index]
-            if(current_game[1] == i): #the games in which i was the arm
-                X_s = current_game[0]
-
+            if(current_game[ACTION] == arm): #the games in which i was the arm
+                X_s = current_game[REWARD]
                 summated+=X_s
-
         try:
-            times_i_played = self.N_t(i, game_list) 
-            if(summated == 0 or times_i_played == 0): return 0
+            times_arm_played = self.N_t(arm) 
+            if(summated == 0 or times_arm_played == 0): return 0
             
-            return summated/self.N_t(i, game_list)
+            return summated/self.N_t(arm)
         except:
             print("Divide by zero error likely")
-            print(game_list)
+            print(self.game_list)
             print("Last tau games are")
-            print(game_list[-self.look_back:])
+            print(self.game_list[-self.look_back:])
             print("Length of game list is ")
-            print(len(game_list))
+            print(len(self.game_list))
             print("Result of N_t that was trigger is ")
-            print(self.N_t(i, game_list))
+            print(self.N_t(arm))
             print("and the arm causing it was ")
-            print(i)
+            print(arm)
             print("Value of summated is ")
             print(summated)
             exit(1)
 
         
-    def c_t(self, i, game_list):
-
-        t = len(game_list)
-        
-        t_or_tau = min(t,self.look_back)
-        res = auer2002UCB(self.N_t(i, game_list), t_or_tau)
+    def c_t(self, arm):
+        t_or_tau = min(self.bandit_round,self.look_back)
+        res = self.tuned(arm, t_or_tau)
 
         return res
     
+    def sqreward_average(self, arm):
+        r_sum = 0
 
-def asymptotically_optimal(n_k, t):
+        for game in self.game_list:  
+            if(game[ACTION] == arm):
+                r_sum+=np.square(game[REWARD])
+
+        times_arm_played = self.N_t(arm) 
+        if(r_sum == 0 or times_arm_played == 0): return 0
+            
+        return r_sum/times_arm_played
     
-    T_i = n_k
+    def tuned(self, arm, n):
+        n_k = self.N_t(arm)
 
-    f_t = 1.0 + (t  * np.square(np.log(t)))
+        average_of_squares = self.sqreward_average(arm)
+        square_of_average = np.square(self.X_t(arm))
+        estimated_variance = average_of_squares - square_of_average
+        param = np.log(n) / n_k
+        V_k = estimated_variance + np.sqrt(2 * param)
 
-    upper_term = 2.0 * (np.log(f_t))
+        return np.sqrt(param * V_k)
+        
 
-    lower_term =  T_i
 
-    to_be_sqrt = upper_term/lower_term
-    
-    return np.sqrt(to_be_sqrt)
-
-def chapter7(n_k, n):
-    delta = 1.0 / np.square(n)
-
-    upper_term = 2.0 * (np.log( (1.0 / delta) ))
-    
-    to_be_sqrt = upper_term/n_k
-    
-    return np.sqrt(to_be_sqrt)
-
-def auer2002UCB(n_k, n):
-    T_i = n_k
-
-    upper_term = 2 * (np.log(n))
-
-    lower_term =  T_i
-
-    to_be_sqrt = upper_term/lower_term
-    
-    return np.sqrt(to_be_sqrt)
