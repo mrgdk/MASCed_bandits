@@ -1,6 +1,7 @@
 import pickle
 from some_bandits.bandit_options import bandit_args
 
+
 OPT_REVENUE = 1.5
 BASIC_REVENUE = 1
 PRECISION = 10**(-5)
