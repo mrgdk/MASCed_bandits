@@ -1,2 +1,2 @@
-# master_project
+# MASCed_bandits
 TODO
