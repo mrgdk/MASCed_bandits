@@ -10,11 +10,11 @@ bandit_args = {
     "initial_configuration": None, #(4, 1.0),
     "shuffle": False,
     "record_decisions": True,
-    "bounds": (175,230), #-400,300
+    "bounds": (-500,500), #-400,300
     "utility_function": "SEAMS2022",
     "number_of_experts": 2,
     "preload_knowledge": False,
-    "expert": "EXP3C",
+    "expert": "EXP3",
     "round_counter": [0,0],
     "dynamic_bounds": False,
     "expert_preknowledge": [[36.608650878493556, 101.58972407707387, 155.44454636285019, 158.48317206373139, 160.14239383167592], 

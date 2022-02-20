@@ -1,9 +1,8 @@
 
-from some_bandits.Bandit import Bandit
+from some_bandits.bandits.Bandit import Bandit
 from some_bandits.utilities import convert_conf, RT_THRESH, calculate_utility, save_to_pickle
 from some_bandits.bandit_options import bandit_args
-from some_bandits.ucb import ucbC, REWARD
-from some_bandits.EXP3 import EXP3C
+from some_bandits.bandits import init_bandit
 
 class Cleaner():
     def __init__(self):
@@ -26,6 +25,9 @@ def print_rounds():
     print("-----    End      -----\n")
 
 
+bandit_args["arms"] = [(1,1.0), (2,1.0), (3,1.0)]
+bandit_args["initial_configuration"] = (1,1.0)
+
 #We take control over if the bandit is actually called by SWIM or if we clean
 def start(bandit_name,  dimmer, response_time, activeServers, servers, max_servers, total_util, arrival_rate, formula):
     if(bandit_args["bandit_instance"]):
@@ -35,12 +37,7 @@ def start(bandit_name,  dimmer, response_time, activeServers, servers, max_serve
             print_rounds()
             print_bounds()
 
-            print("last action is ")
-            print(bandit.last_action)
-            print("\n\n\n")
-            if(bandit.last_action != (servers, dimmer)): 
-                raise RuntimeError("Previously chosen configuration " + str(bandit.last_action) + " is not reflected in SWIM's" + str((servers,dimmer)))
-
+           
             if(bandit_args['cleaning']):
                 
                 if(response_time > RT_THRESH): 
@@ -62,6 +59,12 @@ def start(bandit_name,  dimmer, response_time, activeServers, servers, max_serve
                 #delta sigma (oldsum) vs sigma delta sum_i
                     for game in bandit.game_list: game[REWARD] = game[REWARD] * bound_delta
 
+                print("last action is ")
+                print(bandit.last_action)
+                print("\n\n\n")
+                if(bandit.last_action != (servers, dimmer)): 
+                    raise RuntimeError("Previously chosen configuration " + str(bandit.last_action) + " is not reflected in SWIM's" + str((servers,dimmer)))
+               
                 new_choice = bandit.start_strategy(reward[0])
                 #print("new choice is " + str(new_choice))
 
@@ -85,7 +88,7 @@ def start(bandit_name,  dimmer, response_time, activeServers, servers, max_serve
                     return converted
     else:
         print("first this")
-        bandit_args["bandit_instance"] = {"ucb": ucbC, "EXP3": EXP3C}[bandit_name](formula)
+        bandit_args["bandit_instance"] = init_bandit(bandit_name,formula)
         return start(bandit_name,  dimmer, response_time, activeServers, servers, max_servers, total_util, arrival_rate, formula)
 
     #start_strategy: takes swim variables, returns swim tactics

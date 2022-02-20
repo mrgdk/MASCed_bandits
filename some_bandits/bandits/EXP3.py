@@ -17,7 +17,7 @@ class EXP3(Bandit, Expert):
     def __init__(self, formula): 
         super().__init__("EXP3-" + formula)
         self.weights, self.distribution = self.exp3_initialize(len(self.arms))
-
+        self.num_arms = len(self.arms)
         self.distr_func = None
         self.update_func = None
 

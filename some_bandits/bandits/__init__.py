@@ -4,6 +4,7 @@ from some_bandits.bandits.EXP4 import EXP4
 from some_bandits.bandits.UCB import UCB
 from some_bandits.bandits.UCBImproved import UCBImproved
 from some_bandits.bandits.UCBNorm import UCBNorm
+from some_bandits.bandits.SWUCB import SWUCB
 
 def init_bandit(name, formula=None):
     chosen_bandit = {
@@ -11,7 +12,8 @@ def init_bandit(name, formula=None):
         "UCB": UCB,
         "EXP3": EXP3,
         "UCBImproved": UCBImproved,
-        "UCBNorm": UCBNorm
+        "UCBNorm": UCBNorm,
+        "SWUCB": SWUCB
     }.get(name, None)
 
     if(chosen_bandit):

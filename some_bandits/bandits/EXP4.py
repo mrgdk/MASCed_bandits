@@ -83,7 +83,7 @@ class EXP4(Bandit):
     
     def expert_to_class(self, choice):
         funcs = {
-                "EXP3C": EXP3C
+                "EXP3": EXP3
             }
             
         func = funcs.get(choice)
