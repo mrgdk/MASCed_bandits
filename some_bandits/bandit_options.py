@@ -21,5 +21,12 @@ bandit_args = {
                             [6.5191987585019859, 19.81411169769218, 41.438958866194355, -18.95283084856483, 126.99528063289736]]
 }
 
+
+def initialize_arguments(arms, initial_arm, bounds):
+    bandit_args["arms"] = arms
+    bandit_args["initial_configuration"] = initial_arm
+    bandit_args["bounds"] = bounds
+
+
 if(bandit_args["shuffle"]) :random.shuffle(bandit_args["arms"])
 
