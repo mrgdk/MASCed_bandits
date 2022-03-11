@@ -5,18 +5,27 @@ from some_bandits.bandits.UCB import UCB
 from some_bandits.bandits.UCBImproved import UCBImproved
 from some_bandits.bandits.UCBNorm import UCBNorm
 from some_bandits.bandits.SWUCB import SWUCB
+from some_bandits.bandits.EwS import EwS
+from some_bandits.bandits.EXP3S import EXP3S
+from some_bandits.bandits.DUCB import DUCB
 
-def init_bandit(name, formula=None):
+
+def init_bandit(name, formula=""):
     chosen_bandit = {
         "egreedy": egreedy,
         "UCB": UCB,
         "EXP3": EXP3,
         "UCBImproved": UCBImproved,
         "UCBNorm": UCBNorm,
-        "SWUCB": SWUCB
+        "SWUCB": SWUCB,
+        "EwS": EwS,
+        "EXP3S": EXP3S,
+        "EXP4": EXP4,
+        "DUCB": DUCB
+
     }.get(name, None)
 
     if(chosen_bandit):
         return chosen_bandit(formula)
     else:
-        raise RuntimeError("Specified Bandit did not exist")
+        raise RuntimeError("Specified Bandit " + str(chosen_bandit) + " did not exist")

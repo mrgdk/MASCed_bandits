@@ -5,7 +5,7 @@ from some_bandits.utilities import calculate_utility, convert_conf
 from some_bandits.bandit_options import bandit_args
 from some_bandits.bandits.Bandit import Bandit
 
-DECAY_RATE = 1.6
+DECAY_RATE = 1
 
 REWARD = 0
 ACTION = 1
@@ -18,7 +18,7 @@ class egreedy(Bandit):
         self.game_list = []
         self.last_action = initial_configuration
 
-        self.epsilon = 1.0
+        self.epsilon = float(formula)
 
     def start_strategy(self, reward):
         self.game_list.append([reward, self.last_action])

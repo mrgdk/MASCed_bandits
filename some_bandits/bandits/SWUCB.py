@@ -4,7 +4,7 @@ from random import sample
 from some_bandits.utilities import save_to_pickle, load_from_pickle, truncate, convert_conf, calculate_utility
 from some_bandits.bandit_options import bandit_args
 from some_bandits.bandits.Bandit import Bandit
-
+from collections import deque
 
 
 REWARD = 0
@@ -19,7 +19,7 @@ class SWUCB(Bandit):
         self.look_back = int(formula)
 
         self.bandit_round = -1
-        self.game_list = []
+        self.game_list = deque(maxlen=self.look_back)
         self.last_action = bandit_args["initial_configuration"]
         
 
@@ -41,11 +41,9 @@ class SWUCB(Bandit):
         return next_arm
 
     def N_t(self, arm):
-        start_point = max(0, self.bandit_round-self.look_back+1)
         count = 0
-        for game_index in range(start_point,self.bandit_round):
-            if(self.game_list[game_index][ACTION] == arm):
-                count += 1
+        for game in self.game_list:
+            if(game[ACTION] == arm): count += 1
 
         return count
 
@@ -53,9 +51,8 @@ class SWUCB(Bandit):
 
         summated = 0
 
-        start_point = max(0, self.bandit_round-self.look_back+1)
-        for game_index in range(start_point,self.bandit_round):
-            current_game = game_list[game_index]
+        
+        for current_game in self.game_list:
             if(current_game[ACTION] == arm): #the games in which i was the arm
                 X_s = current_game[REWARD]
                 summated+=X_s
@@ -81,8 +78,7 @@ class SWUCB(Bandit):
 
         
     def c_t(self, arm):
-        t_or_tau = min(self.bandit_round,self.look_back)
-        res = self.tuned(arm, t_or_tau)
+        res = self.chapter7(arm, len(self.game_list)) #t or tau has become unnecessary
 
         return res
     
@@ -108,6 +104,18 @@ class SWUCB(Bandit):
         V_k = estimated_variance + np.sqrt(2 * param)
 
         return np.sqrt(param * V_k)
+    
+    def chapter7(self, arm, n):
+        DELTA = 1 / np.square(self.look_back)
+
+        n_k = self.N_t(arm)
+
+
+        upper_term = 2 * np.log( (1 / DELTA) )
+        
+        to_be_sqrt = upper_term/n_k
+        
+        return np.sqrt(to_be_sqrt)
         
 
 

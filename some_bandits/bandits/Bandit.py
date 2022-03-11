@@ -14,6 +14,10 @@ class Bandit:
     def start_strategy(self, reward):
         """ starts execution """
         pass
+    
+    def visualize(self):
+        """ will create a visualization of the current state of the algorithm """
+        pass
 
 
 

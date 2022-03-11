@@ -5,14 +5,13 @@ from some_bandits.bandits.Bandit import Bandit
 from some_bandits.bandit_options import bandit_args
 from some_bandits.utilities import calculate_utility, convert_conf
 from some_bandits.bandits.EXP3 import EXP3
+from some_bandits.bandits.EwS import EwS
 ACTION = 0
 REWARD = 1
 N_K = 2
 
-#ETA = 1
-TOTAL_ROUNDS = round(30000 / 60)
+TOTAL_ROUNDS = 1#round(3000 / 60)
 
-ETA = None
 class EXP4(Bandit):
     def __init__(self, formula):
         super().__init__("EXP4-" + formula)
@@ -23,10 +22,11 @@ class EXP4(Bandit):
 
         self.distribution = None
         
+        self.eta = 0.1#np.sqrt( (2 * np.log(self.num_exps)) / (len(self.arms) * TOTAL_ROUNDS))
+
         self.experts = []
 
         self.knowledge = None
-
         self.previous_expert = 0 #this can be any expert but needs to be specified.
        
         self.last_action = bandit_args["initial_configuration"]
@@ -35,19 +35,25 @@ class EXP4(Bandit):
 
         for i in range(self.num_exps):
             exp_instance = self.expert("FH")
-            exp_instance.eta = np.sqrt( np.log(len(self.arms))/ (TOTAL_ROUNDS * len(self.arms))   )
+            #exp_instance.eta = 0.1#np.sqrt( np.log(len(self.arms))/ (TOTAL_ROUNDS * len(self.arms))   )
 
-            exp_instance.set_functions("FH")
             if(bandit_args["preload_knowledge"]):
-                exp_instance.weights = bandit_args["expert_preknowledge"][i]
-            exp_instance.distr_func(exp_instance.distribution, exp_instance.weights, exp_instance.eta)
+                
+                if(isinstance(exp_instance,EwS)):
+                    exp_instance.weights = bandit_args["expert_preknowledge"][i][0]
+                    exp_instance.arm_reward_pairs = bandit_args["expert_preknowledge"][i][1]
+                else:
+                    exp_instance.weights = bandit_args["expert_preknowledge"][i]
+            exp_instance.distr_func()
             self.experts.append(exp_instance)
+        #print("BOO")
         
 
     
     def start_strategy(self, reward):
-
-        self.expert_status()
+        #print("BAA")
+        #self.expert_status()
+        #print("My distribution is " + str(self.distribution))
 
         experts_matrix = np.matrix([expert.distribution for expert in self.experts])
         dist_over_arms = self.distribution * experts_matrix
@@ -61,17 +67,17 @@ class EXP4(Bandit):
         
         experts_weights = list(np.array(np.matmul(experts_matrix,approx_arm_rewards)).flatten())
    
-        self.experts[self.previous_expert].propagate_reward(reward, self.arms.index(self.last_action))
+        #self.experts[self.previous_expert].propagate_reward(reward, self.arms.index(self.last_action)) this makes the expert learn
 
-        ETA = np.sqrt( (2 * np.log(self.num_exps)) / (len(self.arms) * TOTAL_ROUNDS))
 
-        sum_prev_weights = sum([ np.exp(ETA * experts_weights[j])* self.distribution[j] for j in range(self.num_exps)])
+        sum_prev_weights = sum([ np.exp(self.eta * experts_weights[j])* self.distribution[j] for j in range(self.num_exps)])
 
         for odd_index, expert_odd in enumerate(self.distribution):
-            adjusted_weight = np.exp(ETA * experts_weights[odd_index])
+            adjusted_weight = np.exp(self.eta * experts_weights[odd_index])
             
             self.distribution[odd_index] = ((adjusted_weight * expert_odd) / sum_prev_weights)
 
+ 
         expert_choice = np.random.choice(np.arange(0, self.num_exps), p= self.distribution) #first choose the expert
 
         chosen_action = self.arms[self.experts[expert_choice].sample_action()]  #get action from that expert
@@ -83,7 +89,8 @@ class EXP4(Bandit):
     
     def expert_to_class(self, choice):
         funcs = {
-                "EXP3": EXP3
+                "EXP3": EXP3,
+                "EwS" : EwS
             }
             
         func = funcs.get(choice)
@@ -91,8 +98,8 @@ class EXP4(Bandit):
         return func
 
     def expert_status(self):
-        for expert in self.experts:
-            print("-----EXPERT-----")
+        for i, expert in enumerate(self.experts):
+            print("-----EXPERT" + str(i) +"---")
             print('Distribution: ' + str(expert.distribution))
             print('Weights: ' + str(expert.weights))
             print("-----END EXPERT---")

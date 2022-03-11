@@ -4,14 +4,16 @@ from random import sample
 #from utilities import save_to_pickle, load_from_pickle, truncate, convert_conf, calculate_utility
 from some_bandits.bandit_options import bandit_args
 from some_bandits.bandits.Bandit import Bandit
-
+import matplotlib.pyplot as plt
 
 
 #formula = "ao"
 FORMULA_FUNC = None
 
-REWARD = 0
-ACTION = 1
+CUM_REWARD = 0
+CUM_SQ_REWARD = 1
+N_K = 2
+
 
 
 
@@ -24,20 +26,22 @@ class UCB(Bandit):
     def __init__(self, formula):
         super().__init__("UCB-" + formula)
         self.formula = self.formula_to_function(formula)
-        self.knowledge = None
 
         self.bandit_round = -1
-        self.game_list = []
+        self.arm_reward_pairs = {}
+        for arm in self.arms: self.arm_reward_pairs[arm] = [0.0,0.0,0.0]
+        
         self.last_action = bandit_args["initial_configuration"]
-        print('foooo')
-        print(self.last_action)
 
 
         
     def start_strategy(self, reward):
+        #print("rew is " + str(reward))
+        self.arm_reward_pairs[self.last_action][CUM_REWARD]+=reward
+        self.arm_reward_pairs[self.last_action][CUM_SQ_REWARD]+=np.square(reward)
+        self.arm_reward_pairs[self.last_action][N_K]+=1
 
-        self.game_list.append([reward, self.last_action])
-
+        #print(self.arm_reward_pairs)
         self.bandit_round = self.bandit_round + 1
 
         if((self.bandit_round) < (len(self.arms))):
@@ -64,32 +68,7 @@ class UCB(Bandit):
         return func
 
     def reward_average(self, arm):
-        r_sum = 0
-
-        for game in self.game_list:  
-            if(game[ACTION] == arm): #the games in which arm was chosen
-                r_sum+=game[REWARD]
-     
-        times_arm_played = self.times_played(arm) 
-        if(r_sum == 0 or times_arm_played == 0): return 0
-            
-        return r_sum/times_arm_played
-
-    
-    def sqreward_average(self, arm):
-        r_sum = 0
-
-        for game in self.game_list:  
-            if(game[ACTION] == arm): #the games in which arm was chosen
-                r_sum+=np.square(game[REWARD])
-
-        times_arm_played = self.times_played(arm) 
-        if(r_sum == 0 or times_arm_played == 0): return 0
-            
-        return r_sum/times_arm_played
-
-    def times_played(self, arm):
-        return len([game for game in self.game_list if game[ACTION] == arm])
+        return self.arm_reward_pairs[arm][CUM_REWARD] / self.arm_reward_pairs[arm][N_K]  
 
 
     def chapter7(self, arm, n):
@@ -97,12 +76,12 @@ class UCB(Bandit):
 
         upper_term = 2 * np.log( (1 / DELTA) )
         
-        to_be_sqrt = upper_term/self.times_played(arm)
+        to_be_sqrt = upper_term/self.arm_reward_pairs[arm][N_K]
         
         return np.sqrt(to_be_sqrt)
 
     def asymptotically_optimal(self, arm, t):
-        T_i = self.times_played(arm)
+        T_i = self.arm_reward_pairs[arm][N_K]
 
         f_t = 1 + (t  * np.square(np.log(t)))
 
@@ -115,7 +94,7 @@ class UCB(Bandit):
         return np.sqrt(to_be_sqrt)
 
     def auer2002UCB(self, arm, t):
-        T_i = self.times_played(arm)
+        T_i = self.arm_reward_pairs[arm][N_K]
 
         upper_term = 2 * (np.log(t))
 
@@ -126,12 +105,27 @@ class UCB(Bandit):
         return np.sqrt(to_be_sqrt)
 
     def tuned(self, arm, n):
-        n_k = self.times_played(arm)
+        n_k = self.arm_reward_pairs[arm][N_K]
 
-        average_of_squares = self.sqreward_average(arm)
-        square_of_average = np.square(self.reward_average(arm))
+        average_of_squares = self.arm_reward_pairs[arm][CUM_SQ_REWARD] / n_k
+        square_of_average = np.square(self.arm_reward_pairs[arm][CUM_REWARD]/n_k)
         estimated_variance = average_of_squares - square_of_average
         param = np.log(n) / n_k
         V_k = estimated_variance + np.sqrt(2 * param)
 
-        return np.sqrt(param * V_k)
+        confidence_value = np.sqrt(param * V_k)
+        if(np.isnan(confidence_value)):
+            print("\n\n\n\ncaught a nan\n\n\n\n\n")
+            return 0
+        else:
+            return confidence_value
+
+    def visualize(self):
+        times_arms_chosen = [self.arm_reward_pairs[arm][N_K] for arm in self.arms]
+        arm_names = [str(arm) for arm in self.arms]
+
+        print((len(self.arms), len(times_arms_chosen)))
+        plt.bar(arm_names, times_arms_chosen)
+
+        plt.savefig("testvisualizationofUCB.png")
+
