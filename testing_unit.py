@@ -2,6 +2,8 @@ from numpy import random
 import functools
 from input_config import *
 
+
+
 GENERATORS = {
     "normal": random.normal,
     "binomial": random.binomial,
@@ -13,8 +15,9 @@ GENERATORS = {
 
 
 class Mock():
-    def __init__(self, num_of_rounds):
-        self.arms = self.init_arms(get_configurations())
+    def __init__(self, num_of_rounds, seed):
+        random.seed(seed)
+        self.arms = {}
         self.num_arms = len(self.arms)
         self.rounds = num_of_rounds
     
@@ -33,11 +36,8 @@ class Mock():
 
             arms["A" + str(i+1)] = tuple(current_arm)
         
-        return arms
+        self.arms = arms
     
-    """TODO: 
-            ->Save the reward to a seed to generate the same thing later on.
-    """
     #Generates reward for the specified arm.
     def generate_reward(self, arm):
         configs = self.arms[arm]
