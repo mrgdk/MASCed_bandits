@@ -17,12 +17,20 @@ GENERATORS = {
 class Mock():
     def __init__(self, num_of_rounds, seed):
         random.seed(seed)
+        self.seed = seed
         self.arms = {}
         self.num_arms = len(self.arms)
         self.rounds = num_of_rounds
+        self.result = {}
     
-    #Associates the arms with their configurations.
+    def __repr__(self) -> str:
+        return "ARMS:{}\nSEED:{}\nRESULT:{}".format(self.arms, self.seed, self.result)
 
+    def __eq__(self, other):
+        return self.seed == other.seed and self.arms == other.arms
+    
+
+    #Associates the arms with their configurations.
     def get_arms(self):
         return list(self.arms.keys())
 

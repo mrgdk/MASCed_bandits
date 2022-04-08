@@ -9,11 +9,6 @@ BOUNDS = (0,100)
 INITIAL_ARM = 0
 
 def start(bandit_name, bandit_formula, myMock):
-    """
-        Read the distributions from the file
-        Pass them inside of the init_arms function
-        Learn Python Unit testing, it has this functionality.
-    """
     ARMS = myMock.get_arms()
     initialize_arguments(ARMS, INITIAL_ARM, bounds = BOUNDS)
     bandit_instance = init_bandit(bandit_name, bandit_formula)
