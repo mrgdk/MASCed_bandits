@@ -12,7 +12,7 @@ INITIAL_ARM = 0
 SEED = 3
 
 def start(bandit_name, bandit_formula = ""):
-    mytest = Mock(ROUNDS,SEED)
+    mytest = Mock(ROUNDS, SEED, bandit_name, bandit_formula)
     mytest.init_arms(get_configurations())
     ARMS = mytest.get_arms()
     
@@ -37,11 +37,10 @@ def start(bandit_name, bandit_formula = ""):
 
     """TODO: DONT TOUCH ABOVE!!!"""
 
-    mytest.result = dict(coun)
-
+    #Setting the result of the run and selected arms by far in the mock object and saving this run in my record file.
+    print(dict(coun))
+    mytest.set_result(dict(coun), chosen_arms)
     save_run(mytest)
-
-"""TODO: """
 
 def save_run(mytest):
     loaded_dict = []
@@ -56,6 +55,8 @@ def save_run(mytest):
     if not mytest in loaded_dict:
         with open('record.pkl', 'ab') as f:
             pickle.dump((mytest), file = f)
+    else:
+        print("\n\n\nPREVIOUSLY YOU HAVE RUN THIS!!!\n\n\n")
     print(loaded_dict)
 
 

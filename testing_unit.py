@@ -15,19 +15,23 @@ GENERATORS = {
 
 
 class Mock():
-    def __init__(self, num_of_rounds, seed):
+
+    def __init__(self, num_of_rounds, seed, bandit_name, bandit_formula):
         random.seed(seed)
         self.seed = seed
         self.arms = {}
         self.num_arms = len(self.arms)
         self.rounds = num_of_rounds
+        self.bandit = bandit_name
+        self.formula = bandit_formula
         self.result = {}
+        self.arm_selections = []
     
     def __repr__(self) -> str:
-        return "ARMS:{}\nSEED:{}\nRESULT:{}".format(self.arms, self.seed, self.result)
+        return "\nARMS:{}\nSEED:{}\nRESULT:{}\nSELECTIONS:{}".format(self.arms, self.seed, self.result, self.arm_selections)
 
     def __eq__(self, other):
-        return self.seed == other.seed and self.arms == other.arms
+        return self.seed == other.seed and self.arms == other.arms and self.arm_selections == other.arm_selections
     
 
     #Associates the arms with their configurations.
@@ -46,6 +50,13 @@ class Mock():
         
         self.arms = arms
     
+    def set_result(self, arm_selection_freq, chosen_arms):
+        self.result = arm_selection_freq
+        self.arm_selections = chosen_arms
+    
+    def get_result(self):
+        return (self.result, self.arm_selections)
+
     #Generates reward for the specified arm.
     def generate_reward(self, arm):
         configs = self.arms[arm]

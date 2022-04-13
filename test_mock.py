@@ -4,27 +4,54 @@ from tests.normal import *
 import pickle
 
 class Test_egreedy(unittest.TestCase):
-    bandit = "egreedy"
-    formula = 0.5
-
-    def test_normal_simple1(self):
-        myMock = Mock(ROUNDS, seed1)
+    def test_egreedy_normal_simple1(self):
+        myMock = Mock(ROUNDS, seed1, "egreedy", 0.5)
         myMock.init_arms(normal_simple1)
-        result = start(self.bandit, self.formula, myMock)
-        self.assertEqual(result, test_result1)
+        result = start(myMock)
+        self.assertEqual(result, generate_result(seed1, normal_simple1, "egreedy", 0.5))
     
-    def test_normal_simple2(self):
-        myMock = Mock(ROUNDS, seed2)
+    def test_egreedy_normal_simple2(self):
+        myMock = Mock(ROUNDS, seed2, "egreedy", 0.5)
         myMock.init_arms(normal_simple2)
-        result = start(self.bandit, self.formula, myMock)
-        self.assertEqual(result, test_result2)
+        result = start(myMock)
+        self.assertEqual(result, generate_result(seed2, normal_simple2, "egreedy", 0.5))
     
-    def test_binomial_simple1(self):
-        myMock = Mock(ROUNDS, seed3)
+    def test_egreedy_binomial_simple1(self):
+        myMock = Mock(ROUNDS, seed3, "egreedy", 0.5)
         myMock.init_arms(binomial_simple1)
-        result = start(self.bandit, self.formula, myMock)
-        self.assertEqual(result, test_result3)
+        result = start(myMock)
+        self.assertEqual(result, generate_result(seed3, binomial_simple1, "egreedy", 0.5))
     
+    def test_UCB_normal_simple1(self):
+        myMock = Mock(ROUNDS, seed1, "UCB", "OG")
+        myMock.init_arms(normal_simple1)
+        result = start(myMock)
+        self.assertEqual(result, generate_result(seed1, normal_simple1, "UCB", "OG"))
+
+    def test_UCBImproved_normal_simple1(self):
+        myMock = Mock(ROUNDS, seed3, "UCBImproved", "OG")
+        myMock.init_arms(normal_simple1)
+        result = start(myMock)
+        self.assertEqual(result, generate_result(seed3, normal_simple1, "UCBImproved", "OG"))
+
+    def test_UCBNorm_normal_simple2(self):
+        myMock = Mock(ROUNDS, seed2, "UCBNorm", "OG")
+        myMock.init_arms(normal_simple2)
+        result = start(myMock)
+        self.assertEqual(result, generate_result(seed2, normal_simple2, "UCBNorm", "OG"))
+    
+    def test_SWUCB_binomial_simple1(self):
+        myMock = Mock(ROUNDS, seed2, "SWUCB", 10)
+        myMock.init_arms(binomial_simple1)
+        result = start(myMock)
+        self.assertEqual(result, generate_result(seed2, binomial_simple1, "SWUCB", 10))
+    
+    def test_DUCB_binomial_simple1(self):
+        myMock = Mock(ROUNDS, seed1, "DUCB", 0.5)
+        myMock.init_arms(binomial_simple1)
+        result = start(myMock)
+        self.assertEqual(result, generate_result(seed1, binomial_simple1, "DUCB", 0.5))
+
     def test_previous_runs(self):
         prev_runs = []
         with open('record.pkl', 'rb+') as f:
@@ -35,9 +62,8 @@ class Test_egreedy(unittest.TestCase):
                     break
         
         for run in prev_runs:
-            myMock = Mock(ROUNDS, run.seed)
+            myMock = Mock(ROUNDS, run.seed, run.bandit, run.formula)
             myMock.arms = run.arms
-            result = start(self.bandit, self.formula, myMock)
-            self.assertEqual(result, run.result)
-        
-        
+            result = start(myMock)
+            self.assertEqual(result, run.get_result())
+            

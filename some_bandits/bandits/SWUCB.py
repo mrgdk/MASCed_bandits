@@ -14,7 +14,8 @@ XI = 2
 
 class SWUCB(Bandit):
     def __init__(self, formula):
-        super().__init__("SWUCB-" + formula)
+        """TODO: FIXED THE FORMULA PART WHERE PREVIOUSLY ELVIN WAS TRYING TO CONCATENATE THE FORMULA WITH 'SWUCB' ALTHOUGH IT'S AN INT."""
+        super().__init__("SWUCB-" + str(formula))
         #self.look_back = 65
         self.look_back = int(formula)
 

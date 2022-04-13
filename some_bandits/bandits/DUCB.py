@@ -19,7 +19,8 @@ ACTION = 1
 
 class DUCB(Bandit):
     def __init__(self, formula):
-        super().__init__("DUCB-" + formula)
+        """TODO: FIXED THE FORMULA PART WHERE PREVIOUSLY ELVIN WAS TRYING TO CONCATENATE THE FORMULA WITH 'SWUCB' ALTHOUGH IT'S AN INT."""
+        super().__init__("DUCB-" + str(formula))
 
         self.discount = float(formula)
         self.bandit_round = -1

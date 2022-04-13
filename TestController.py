@@ -3,15 +3,16 @@ from some_bandits.bandits import init_bandit
 import sys
 from collections import Counter
 from testing_unit import *
+from tests.normal import *
 
 ROUNDS = 100
 BOUNDS = (0,100)
 INITIAL_ARM = 0
 
-def start(bandit_name, bandit_formula, myMock):
+def start(myMock):
     ARMS = myMock.get_arms()
     initialize_arguments(ARMS, INITIAL_ARM, bounds = BOUNDS)
-    bandit_instance = init_bandit(bandit_name, bandit_formula)
+    bandit_instance = init_bandit(myMock.bandit, myMock.formula)
 
     # initial round:
     reward = myMock.generate_reward(ARMS[INITIAL_ARM])
@@ -32,5 +33,10 @@ def start(bandit_name, bandit_formula, myMock):
     for k in coun.keys():
         coun[k] /= len(chosen_arms)
     
-    return dict(coun)
+    return (dict(coun), chosen_arms)
     
+#Generates results using the given seed, distribution, bandit name and the formula.
+def generate_result(seed, arms, bandit, formula):
+    mymock = Mock(ROUNDS, seed, bandit, formula)
+    mymock.init_arms(arms)
+    return start(mymock)
