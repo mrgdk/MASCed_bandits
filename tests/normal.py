@@ -22,3 +22,11 @@ binomial_simple1 = [
     "binomial 5 0.4",
     "binomial 2 0.5"
 ]
+
+binomial_simple2 =  [
+    "binomial 0.9 0.1",
+    "binomial 0.5 0.2",
+    "binomial 0.6 0.4",
+    "binomial 0.3 0",
+    "binomial 0.7 0.3"
+]

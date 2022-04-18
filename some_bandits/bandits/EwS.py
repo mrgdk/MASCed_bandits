@@ -13,7 +13,7 @@ N_K = 1
 
 class EwS(Bandit, Expert):
     def __init__(self, formula): 
-        super().__init__("EwS-" + formula)
+        super().__init__("EwS-" + str(formula))
         self.weights, self.distribution = self.ews_initialize(len(self.arms))
         self.num_arms = len(self.arms)
 

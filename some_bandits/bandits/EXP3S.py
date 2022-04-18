@@ -15,7 +15,7 @@ N_K = 2
 
 class EXP3S(Bandit, Expert):
     def __init__(self, formula): 
-        super().__init__("EXP3S-" + formula)
+        super().__init__("EXP3S-" + str(formula))
         self.weights, self.distribution = self.exp3s_initialize(len(self.arms))
         self.num_arms = len(self.arms)
 

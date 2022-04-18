@@ -14,7 +14,7 @@ TOTAL_ROUNDS = 1#round(3000 / 60)
 
 class EXP4(Bandit):
     def __init__(self, formula):
-        super().__init__("EXP4-" + formula)
+        super().__init__("EXP4-" + str(formula))
         
         self.num_exps = bandit_args["number_of_experts"]
         

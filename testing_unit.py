@@ -62,4 +62,4 @@ class Mock():
         configs = self.arms[arm]
         dist_name = configs[0]
         reward = GENERATORS[dist_name](*configs[1:], size = 1)
-        return reward
+        return reward[0]

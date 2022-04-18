@@ -27,6 +27,7 @@ def start(bandit_name, bandit_formula = ""):
     chosen_arms = []
     for i in range(mytest.rounds):
         reward = mytest.generate_reward(chosen_arm)
+        print(reward)
         chosen_arm = bandit_instance.start_strategy(reward)
         chosen_arms += [chosen_arm]
     
@@ -57,7 +58,6 @@ def save_run(mytest):
             pickle.dump((mytest), file = f)
     else:
         print("\n\n\nPREVIOUSLY YOU HAVE RUN THIS!!!\n\n\n")
-    print(loaded_dict)
 
 
 start(sys.argv[1], sys.argv[2])
