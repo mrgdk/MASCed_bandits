@@ -4,7 +4,7 @@ import sys
 from collections import Counter
 from testing_unit import *
 import pickle
-
+import matplotlib.pyplot as plt
 
 ROUNDS = 100
 BOUNDS = (0,100)
@@ -25,11 +25,12 @@ def start(bandit_name, bandit_formula = ""):
     
     # rest of the rounds:
     chosen_arms = []
+    rewards = []
     for i in range(mytest.rounds):
         reward = mytest.generate_reward(chosen_arm)
-        print(reward)
         chosen_arm = bandit_instance.start_strategy(reward)
         chosen_arms += [chosen_arm]
+        rewards += [reward]
     
     coun = Counter(chosen_arms)
     
@@ -42,6 +43,24 @@ def start(bandit_name, bandit_formula = ""):
     print(dict(coun))
     mytest.set_result(dict(coun), chosen_arms)
     save_run(mytest)
+    visualize(chosen_arms,rewards)
+    
+
+
+def visualize(chosen_arms, rewards):
+    plt.plot(chosen_arms, "-o")
+    plt.title('Arm Selection Throughout the Run')
+    plt.xlabel('Rounds')
+    plt.ylabel('Arms')
+    plt.savefig('arm_selection.png')
+    plt.show()
+
+    plt.plot(rewards, '-ok')
+    plt.title('Rewards Throughout the Run')
+    plt.xlabel('Rounds')
+    plt.ylabel('Rewards')
+    plt.savefig('rewards.png')
+    plt.show()
 
 def save_run(mytest):
     loaded_dict = []
