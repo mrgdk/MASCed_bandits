@@ -34,9 +34,3 @@ def start(myMock):
         coun[k] /= len(chosen_arms)
     
     return (dict(coun), chosen_arms)
-    
-#Generates results using the given seed, distribution, bandit name and the formula.
-def generate_result(seed, arms, bandit, formula):
-    mymock = Mock(ROUNDS, seed, bandit, formula)
-    mymock.init_arms(arms)
-    return start(mymock)
