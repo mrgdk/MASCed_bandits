@@ -83,6 +83,9 @@ def create_gif(rewards):
 
     for i in range(-len(rewards) + 1, 1):
         plt.plot(rewards[:i])
+        plt.title('Rewards Throughout the Run')
+        plt.xlabel('Rounds')
+        plt.ylabel('Rewards')
         filename = f'/{i}.png'
         filenames.append(filename)
         plt.savefig(PATH_NAME + filename)
@@ -100,7 +103,7 @@ def create_gif(rewards):
 
 def save_run(mytest):
     os.mkdir(PATH_NAME)
-    
+
     with open(PATH_NAME + '/run.txt', 'w') as f:
         f.write(str(mytest))
 

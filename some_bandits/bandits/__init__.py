@@ -8,6 +8,7 @@ from some_bandits.bandits.SWUCB import SWUCB
 from some_bandits.bandits.EwS import EwS
 from some_bandits.bandits.EXP3S import EXP3S
 from some_bandits.bandits.DUCB import DUCB
+from some_bandits.bandits.explore_commit import explore_commit
 
 
 def init_bandit(name, formula=""):
@@ -21,7 +22,8 @@ def init_bandit(name, formula=""):
         "EwS": EwS,
         "EXP3S": EXP3S,
         "EXP4": EXP4,
-        "DUCB": DUCB
+        "DUCB": DUCB,
+        "explore_commit": explore_commit
 
     }.get(name, None)
 
