@@ -1,4 +1,3 @@
-#generate_result(seed1, normal_simple1, "egreedy", 0.3)
 from TestController import *
 import pickle
 

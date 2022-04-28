@@ -28,7 +28,7 @@ class Mock():
         self.arm_selections = []
     
     def __repr__(self) -> str:
-        return "\nARMS:{}\nSEED:{}\nRESULT:{}\nSELECTIONS:{}".format(self.arms, self.seed, self.result, self.arm_selections)
+        return "\nBANDIT: {}\nFORMULA: {}\nARMS: {}\nSEED: {}\nRESULT: {}\nSELECTIONS: {}".format(self.bandit, self.formula, self.arms, self.seed, self.result, self.arm_selections)
 
     def __eq__(self, other):
         return self.seed == other.seed and self.arms == other.arms and self.arm_selections == other.arm_selections
