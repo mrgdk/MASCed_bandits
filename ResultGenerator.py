@@ -30,6 +30,7 @@ class ResultGenerator():
 
 mygenerator = ResultGenerator()
 
+#TODO: ADD YOUR CASE BELOW
 mygenerator.generate(seed1, normal_simple1, "egreedy", 0.3)
 mygenerator.generate(seed2, normal_simple2, "egreedy", 0.1)
 mygenerator.generate(seed3, binomial_simple1, "egreedy", 0.2)
@@ -42,6 +43,7 @@ mygenerator.generate(seed1, normal_simple1, "EwS", "")
 mygenerator.generate(seed1, binomial_simple2, "EXP3", 0.5)
 mygenerator.generate(seed3, binomial_simple2, "EXP3S", 0.6)
 mygenerator.generate(seed3, binomial_simple2, "EXP4", 0.9)
+#TODO: ADD YOUR CASE ABOVE
 
 mygenerator.save_result()
 

@@ -13,18 +13,12 @@ def start(myMock):
     ARMS = myMock.get_arms()
     initialize_arguments(ARMS, INITIAL_ARM, bounds = BOUNDS)
     bandit_instance = init_bandit(myMock.bandit, myMock.formula)
-
-    # initial round:
     reward = myMock.generate_reward(ARMS[INITIAL_ARM])
-    # "start_strategy" means essentially "select_arm"
     chosen_arm = bandit_instance.start_strategy(reward)
     
-    # rest of the rounds:
     chosen_arms = []
     for i in range(ROUNDS):
-        # collect a reward
         reward = myMock.generate_reward(chosen_arm)
-        # ask the bandit for a new arm to play:
         chosen_arm = bandit_instance.start_strategy(reward)
         chosen_arms += [chosen_arm]
     

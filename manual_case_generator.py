@@ -121,4 +121,4 @@ def save_run(mytest):
             pickle.dump((mytest), file = f)
 
 
-start(sys.argv[1], sys.argv[2])
+start(*sys.argv[1:])
