@@ -45,7 +45,7 @@ def start(bandit_name, bandit_formula = ""):
     """TODO: DONT TOUCH ABOVE!!!"""
 
     #Setting the result of the run and selected arms by far in the mock object and saving this run in my record file.
-    mytest.set_result(dict(coun), chosen_arms)
+    mytest.set_result(dict(coun), chosen_arms, rewards)
     save_run(mytest)
     visualize(chosen_arms,rewards)
     
@@ -109,7 +109,7 @@ def save_run(mytest):
 
     loaded_dict = []
     
-    with open('record.pkl', 'rb+') as f:
+    with open('log.pkl', 'rb+') as f:
         while True:
             try:
                 loaded_dict.append(pickle.load(f))
@@ -117,7 +117,7 @@ def save_run(mytest):
                 break
     
     if not mytest in loaded_dict:
-        with open('record.pkl', 'ab') as f:
+        with open('log.pkl', 'ab') as f:
             pickle.dump((mytest), file = f)
 
 

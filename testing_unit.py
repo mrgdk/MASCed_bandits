@@ -26,9 +26,10 @@ class Mock():
         self.formula = bandit_formula
         self.result = {}
         self.arm_selections = []
+        self.rewards = []
     
     def __repr__(self) -> str:
-        return "\nBANDIT: {}\nFORMULA: {}\nARMS: {}\nSEED: {}\nRESULT: {}\nSELECTIONS: {}".format(self.bandit, self.formula, self.arms, self.seed, self.result, self.arm_selections)
+        return "BANDIT: {}\nFORMULA: {}\nARMS: {}\nSEED: {}\nRESULT: {}\nSELECTIONS: {}\nREWARDS: {}".format(self.bandit, self.formula, self.arms, self.seed, self.result, self.arm_selections, self.rewards)
 
     def __eq__(self, other):
         return self.seed == other.seed and self.arms == other.arms and self.arm_selections == other.arm_selections
@@ -50,9 +51,10 @@ class Mock():
         
         self.arms = arms
     
-    def set_result(self, arm_selection_freq, chosen_arms):
+    def set_result(self, arm_selection_freq, chosen_arms, rewards):
         self.result = arm_selection_freq
         self.arm_selections = chosen_arms
+        self.rewards = rewards
     
     def get_result(self):
         return (self.result, self.arm_selections)

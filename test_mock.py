@@ -1,6 +1,6 @@
 import unittest
 from TestController import *
-from tests.normal import *
+from distribution.normal import *
 import pickle
 from ResultGenerator import ResultGenerator
 
@@ -81,7 +81,7 @@ class Test_egreedy(unittest.TestCase):
 
     def test_previous_runs(self):
         prev_runs = []
-        with open('record.pkl', 'rb+') as f:
+        with open('log.pkl', 'rb+') as f:
             while True:
                 try:
                     prev_runs.append(pickle.load(f))

@@ -3,7 +3,7 @@ from some_bandits.bandits import init_bandit
 import sys
 from collections import Counter
 from testing_unit import *
-from tests.normal import *
+from distribution.normal import *
 
 ROUNDS = 100
 BOUNDS = (0,100)
