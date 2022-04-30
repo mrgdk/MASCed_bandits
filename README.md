@@ -2,17 +2,17 @@
 
 The MASCED_BANDITS framework is meant to be used for experimenting Muti-armed Bandit Algorithms. Currently, the framework supports the algorithms below:
 
--> egreedy: (hyp: _float_ between 0-1)
--> explore_commit: (hyp: _int_ up to ROUNDS (default 100))
--> UCB: (hyp: string ("OG"))
--> UCBImproved: (hyp: _string_ ("OG"))
--> UCBNorm: (hyp: _string_ ("OG"))
--> SWUCB: (hyp: _int_)
--> DUCB: (hyp: _float_ between 0-1)
--> EwS: –
--> EXP3: (hyp: _float_ between 0-1)
--> EXP3S: (hyp: _float_ between 0-1)
--> EXP4: (hyp: _float_ between 0-1)
+    -> egreedy: (hyp: _float_ between 0-1)
+    -> explore_commit: (hyp: _int_ up to ROUNDS (default 100))
+    -> UCB: (hyp: string ("OG"))
+    -> UCBImproved: (hyp: _string_ ("OG"))
+    -> UCBNorm: (hyp: _string_ ("OG"))
+    -> SWUCB: (hyp: _int_)
+    -> DUCB: (hyp: _float_ between 0-1)
+    -> EwS: –
+    -> EXP3: (hyp: _float_ between 0-1)
+    -> EXP3S: (hyp: _float_ between 0-1)
+    -> EXP4: (hyp: _float_ between 0-1)
 
 hyp == hyperparameter type for the associated bandit algorithm
 
