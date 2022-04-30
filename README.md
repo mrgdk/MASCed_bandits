@@ -14,7 +14,7 @@ The MASCED_BANDITS framework is meant to be used for experimenting Muti-armed Ba
 -> EXP3S: (hyp: _float_ between 0-1)
 -> EXP4: (hyp: _float_ between 0-1)
 
-__hyp == hyperparameter type for the associated bandit algorithm
+hyp == hyperparameter type for the associated bandit algorithm
 
 Every bandit algorithm has it's own hyperparameter and the internal operations differ from algorithm to algorithm.
 
