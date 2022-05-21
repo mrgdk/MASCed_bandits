@@ -2,9 +2,9 @@ import unittest
 from TestController import *
 from distribution.normal import *
 import pickle
-from ResultGenerator import ResultGenerator
+from res_gen import ResultGenerator
 
-class Test_egreedy(unittest.TestCase):
+class Test_Container(unittest.TestCase):
     def test_egreedy_normal_simple1(self):
         myMock = Mock(ROUNDS, seed1, "egreedy", 0.3)
         myMock.init_arms(normal_simple1)
@@ -22,6 +22,12 @@ class Test_egreedy(unittest.TestCase):
         myMock.init_arms(binomial_simple1)
         result = start(myMock)
         self.assertEqual(result, ResultGenerator().get_result(seed3, binomial_simple1, "egreedy", 0.2))
+
+    def test_extra(self):
+        myMock = Mock(ROUNDS, seed3, "explore_commit", 10)
+        myMock.init_arms(normal_simple1)
+        result = start(myMock)
+        self.assertEqual(result, ResultGenerator().get_result(seed3, normal_simple1, "explore_commit", 10))
     
     def test_UCB_normal_simple1(self):
         myMock = Mock(ROUNDS, seed1, "UCB", "OG")
@@ -79,18 +85,18 @@ class Test_egreedy(unittest.TestCase):
         result = start(myMock)
         self.assertEqual(result, ResultGenerator().get_result(seed3, binomial_simple2, "EXP4", 0.9))
 
-    def test_previous_runs(self):
-        prev_runs = []
-        with open('log.pkl', 'rb+') as f:
-            while True:
-                try:
-                    prev_runs.append(pickle.load(f))
-                except EOFError:
-                    break
+    # def test_previous_runs(self):
+    #     prev_runs = []
+    #     with open('log.pkl', 'rb+') as f:
+    #         while True:
+    #             try:
+    #                 prev_runs.append(pickle.load(f))
+    #             except EOFError:
+    #                 break
         
-        for run in prev_runs:
-            myMock = Mock(ROUNDS, run.seed, run.bandit, run.formula)
-            myMock.arms = run.arms
-            result = start(myMock)
-            self.assertEqual(result, run.get_result())
+    #     for run in prev_runs:
+    #         myMock = Mock(ROUNDS, run.seed, run.bandit, run.formula)
+    #         myMock.arms = run.arms
+    #         result = start(myMock)
+    #         self.assertEqual(result, run.get_result())
             

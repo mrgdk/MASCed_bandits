@@ -20,17 +20,15 @@ def start(bandit_name, bandit_formula = ""):
     mytest = Mock(ROUNDS, SEED, bandit_name, bandit_formula)
     mytest.init_arms(get_configurations())
     ARMS = mytest.get_arms()
-    
     initialize_arguments(ARMS, INITIAL_ARM, bounds = BOUNDS)
     bandit_instance = init_bandit(bandit_name, bandit_formula)
-
-    # initial round:
     reward = mytest.generate_reward(ARMS[INITIAL_ARM])
     chosen_arm = bandit_instance.start_strategy(reward)
     
-    # rest of the rounds:
+    #Execution of the bandit algorithm along with the chosen arms.
     chosen_arms = []
     rewards = []
+
     for i in range(mytest.rounds):
         reward = mytest.generate_reward(chosen_arm)
         chosen_arm = bandit_instance.start_strategy(reward)
@@ -42,9 +40,7 @@ def start(bandit_name, bandit_formula = ""):
     for k in coun.keys():
         coun[k] /= len(chosen_arms)
 
-    """TODO: DONT TOUCH ABOVE!!!"""
-
-    #Setting the result of the run and selected arms by far in the mock object and saving this run in my record file.
+    #Saves the results and plots the relevant graphs.
     mytest.set_result(dict(coun), chosen_arms, rewards)
     save_run(mytest)
     visualize(chosen_arms,rewards)

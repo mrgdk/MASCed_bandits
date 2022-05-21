@@ -29,7 +29,7 @@ class DUCB(Bandit):
 
         
     def start_strategy(self, reward):
-        print("loop")
+        #print("loop")
         self.game_list.append([reward, self.last_action])
 
         self.bandit_round = self.bandit_round + 1
@@ -103,7 +103,7 @@ class DUCB(Bandit):
         #print("values inside tuned " + str((n_k,average_of_squares,square_of_average,estimated_variance,param,V_k)))
         confidence_value = np.sqrt(param * V_k)
         if(np.isnan(confidence_value)):
-            print("\n\n\n\ncaught a nan\n\n\n\n\n")
+            #print("\n\n\n\ncaught a nan\n\n\n\n\n")
             return 0
         else:
             return confidence_value

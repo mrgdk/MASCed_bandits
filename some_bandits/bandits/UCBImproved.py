@@ -34,7 +34,7 @@ class UCBImproved(Bandit):
     def start_strategy(self, reward):
    
         if(len(self.removable_arms) == 1): 
-            print("converged")
+            #print("converged")
             return self.removable_arms[0]
         
         self.arm_reward_pairs[self.last_action][CUM_REWARD]+=reward
@@ -47,7 +47,7 @@ class UCBImproved(Bandit):
 
         for arm in self.removable_arms:
             if self.arm_reward_pairs[arm][N_K] < n_m: 
-                print("Explore phase")
+                #print("Explore phase")
                 self.last_action = arm
                 return arm
 

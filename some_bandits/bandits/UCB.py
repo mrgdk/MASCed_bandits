@@ -115,7 +115,7 @@ class UCB(Bandit):
 
         confidence_value = np.sqrt(param * V_k)
         if(np.isnan(confidence_value)):
-            print("\n\n\n\ncaught a nan\n\n\n\n\n")
+            #print("\n\n\n\ncaught a nan\n\n\n\n\n")
             return 0
         else:
             return confidence_value
@@ -124,7 +124,7 @@ class UCB(Bandit):
         times_arms_chosen = [self.arm_reward_pairs[arm][N_K] for arm in self.arms]
         arm_names = [str(arm) for arm in self.arms]
 
-        print((len(self.arms), len(times_arms_chosen)))
+        #print((len(self.arms), len(times_arms_chosen)))
         plt.bar(arm_names, times_arms_chosen)
 
         plt.savefig("testvisualizationofUCB.png")

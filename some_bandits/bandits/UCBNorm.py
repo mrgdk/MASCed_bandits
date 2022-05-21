@@ -60,11 +60,11 @@ class UCBNorm(Bandit):
 
         sqreward_sum = self.arm_reward_pairs[arm][CUM_SQ_REWARD]
 
-        print((sqreward_sum, (np.square(self.arm_reward_pairs[arm][CUM_REWARD]) * n_k), n_k-1))
+        #print((sqreward_sum, (np.square(self.arm_reward_pairs[arm][CUM_REWARD]) * n_k), n_k-1))
         sq_means = (sqreward_sum - (np.square(self.reward_average(arm)) * n_k)) / (n_k -1)
 
         log_factor = (np.log(self.bandit_round-1)) / n_k
 
-        print((16,sq_means,log_factor))
+        #print((16,sq_means,log_factor))
         return np.sqrt(16 * sq_means * log_factor)
 
